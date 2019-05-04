@@ -3,16 +3,27 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/runtime": "7.4.3",
+    "local-storage": "2.0.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
+    "react-pure-lifecycle": "^3.0.0",
     "react-scripts": "3.0.0",
-    "whatwg-fetch": "^3.0.0"
+    "axios": "^0.18.0"
+  },
+  "devDependencies": {
+    "babel-cli": "6.26.0",
+    "babel-core": "6.26.0",
+    "@babel/preset-env": "7.4.4",
+    "prop-types": "latest",
+    "flow-bin": "0.98.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "flow": "flow"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -27,6 +38,11 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "babel": {
+    "presets": [
+      "es2016"
     ]
   }
 }
