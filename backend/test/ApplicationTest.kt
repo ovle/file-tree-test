@@ -5,6 +5,7 @@ import kotlin.test.*
 import io.ktor.server.testing.*
 import module
 
+@Ignore
 class ApplicationTest {
     @Test
     fun testRoot() {

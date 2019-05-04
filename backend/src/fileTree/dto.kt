@@ -1,5 +1,5 @@
 
-data class FileTreeNode(val id: String, val name: String, val type:Type, val children: List<FileTreeNode> = listOf()) {
+data class FileDto(val id: FileId, val name: String, val type:Type) {
     enum class Type {
         Directory,
         Image,

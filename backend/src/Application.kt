@@ -16,6 +16,8 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
+    val defaultRootPath = this.environment.config.property("ktor.application.defaultRootPath").getString();
+
     install(ContentNegotiation) {
         jackson {
             enable(SerializationFeature.INDENT_OUTPUT)
@@ -25,12 +27,12 @@ fun Application.module(testing: Boolean = false) {
         modules(koinModule)
     }
 
-    val fileTreeService by inject<FileTreeService>()
+    val fileTreeService by inject<FileService>()
 
     routing {
-        get("/files/{rootFileId}") {
+        get("/files/{rootFileId?}") {
             val rootFileId = call.parameters["rootFileId"]
-            call.respond(fileTreeService.fileTree(rootFileId))
+            call.respond(fileTreeService.files(defaultRootPath, rootFileId?.toInt()))
         }
     }
 }
