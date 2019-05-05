@@ -1,4 +1,5 @@
 import com.fasterxml.jackson.databind.SerializationFeature
+import fileTree.FileTypeService
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -33,12 +34,12 @@ fun Application.module(testing: Boolean = false) {
         modules(koinModule)
     }
 
-    val fileTreeService by inject<FileService>()
+    val fileService by inject<FileService>()
 
     routing {
         get("/files/{rootFileId?}") {
             val rootFileId = call.parameters["rootFileId"]
-            val files = fileTreeService.files(defaultRootPath, rootFileId?.toInt())
+            val files = fileService.files(defaultRootPath, rootFileId?.toInt())
             call.respond(HttpStatusCode.OK, files)
         }
     }
