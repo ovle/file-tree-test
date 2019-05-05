@@ -12,7 +12,7 @@ class FileService {
     private val childrenByParentId = mutableMapOf<FileId, Collection<File>>()
 
 
-    fun files(defaultParentPath: String, requestedParentFileId: FileId?): Map<String, List<FileDto>> {
+    fun files(defaultParentPath: String, requestedParentFileId: FileId?): List<FileDto> {
         val parentFile = if (requestedParentFileId != null) cached(requestedParentFileId) else File(defaultParentPath)
 
         //todo error processing
@@ -31,7 +31,7 @@ class FileService {
 
                 FileDto(id, it.name, type(it))
             }
-        return mapOf("files" to filesData)
+        return filesData
     }
 
     private fun mayHaveChildren(parentFile: File): Boolean {

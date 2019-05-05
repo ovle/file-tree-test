@@ -2,7 +2,9 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
+import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
 import io.ktor.routing.get
@@ -18,6 +20,10 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 fun Application.module(testing: Boolean = false) {
     val defaultRootPath = this.environment.config.property("ktor.application.defaultRootPath").getString();
 
+    install(CORS) {
+        anyHost()
+    }
+
     install(ContentNegotiation) {
         jackson {
             enable(SerializationFeature.INDENT_OUTPUT)
@@ -32,7 +38,8 @@ fun Application.module(testing: Boolean = false) {
     routing {
         get("/files/{rootFileId?}") {
             val rootFileId = call.parameters["rootFileId"]
-            call.respond(fileTreeService.files(defaultRootPath, rootFileId?.toInt()))
+            val filesData = fileTreeService.files(defaultRootPath, rootFileId?.toInt())
+            call.respond(HttpStatusCode.OK, mapOf ("data" to filesData) )
         }
     }
 }
