@@ -1,16 +1,17 @@
 // @flow
-
 import AxiosStatic from "axios";
 import appConfig from "../appConfig";
 
-const axiosInstance = AxiosStatic.create({
+const httpClientInstance = AxiosStatic.create({
     baseURL: appConfig.defaultUrl
 });
 
+
 export function fetchData(url: string, success: (data: any) => void) {
-    axiosInstance.get(url,  { crossdomain: true })
+    httpClientInstance.get(url)
         .then(function (response) {
             // handle success
+            success(response.data);
             console.log(response);
         })
         .catch(function (error) {

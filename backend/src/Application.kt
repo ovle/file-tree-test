@@ -38,8 +38,8 @@ fun Application.module(testing: Boolean = false) {
     routing {
         get("/files/{rootFileId?}") {
             val rootFileId = call.parameters["rootFileId"]
-            val filesData = fileTreeService.files(defaultRootPath, rootFileId?.toInt())
-            call.respond(HttpStatusCode.OK, mapOf ("data" to filesData) )
+            val files = fileTreeService.files(defaultRootPath, rootFileId?.toInt())
+            call.respond(HttpStatusCode.OK, files)
         }
     }
 }
