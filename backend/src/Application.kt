@@ -1,11 +1,11 @@
 import com.fasterxml.jackson.databind.SerializationFeature
 import file.service.FileService
-import fileTree.FileTypeService
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
+import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
@@ -24,6 +24,12 @@ fun Application.module(testing: Boolean = false) {
 
     install(CORS) {
         anyHost()
+    }
+
+    install(StatusPages) {
+        exception<Throwable> { cause ->
+            call.respond(mapOf("error" to ErrorDto(cause.localizedMessage)))
+        }
     }
 
     install(ContentNegotiation) {
@@ -45,4 +51,3 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 }
-
