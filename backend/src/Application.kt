@@ -1,4 +1,5 @@
 import com.fasterxml.jackson.databind.SerializationFeature
+import file.service.FileService
 import fileTree.FileTypeService
 import io.ktor.application.Application
 import io.ktor.application.call

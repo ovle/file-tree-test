@@ -8,10 +8,7 @@ import java.io.File
 import java.io.FileInputStream
 import javax.imageio.ImageIO
 
-/**
- * todo name and feature
- * @author PasechnikMN, 05.05.2019 18:50
- */
+
 class FileTypeService {
 
     fun type(file: File): FileDto.Type {
@@ -24,22 +21,17 @@ class FileTypeService {
         }
     }
 
-    private fun isOpenableArchive(file: File) = testSignatures(file,
-        file.service.FileTypeService.Companion.ZIP_FILE_SIGNATURES
-    )
+    private fun isOpenableArchive(file: File) = testSignatures(file, ZIP_FILE_SIGNATURES)
 
-    private fun isArchive(file: File) = testSignatures(file, file.service.FileTypeService.Companion.ZIP_FILE_SIGNATURES) || testSignatures(file,
-        file.service.FileTypeService.Companion.RAR_FILE_SIGNATURES
-    )
+    private fun isArchive(file: File) = testSignatures(file, ZIP_FILE_SIGNATURES) || testSignatures(file, RAR_FILE_SIGNATURES)
 
     private fun isImage(file: File) = ImageIO.read(file) != null
 
     private fun testSignatures(file: File, signatures: Array<ByteArray>) =
         DataInputStream(BufferedInputStream(FileInputStream(file))).use { inputStream ->
-            val fileFirstBytes = ByteArray(file.service.FileTypeService.Companion.MAX_SIGNATURE_LENGTH)
+            val fileFirstBytes = ByteArray(MAX_SIGNATURE_LENGTH)
             val bytesRead = inputStream.read(fileFirstBytes)
-            signatures.any {
-                    signatureBytes ->
+            signatures.any { signatureBytes ->
                 if (bytesRead < signatureBytes.size) return false
                 signatureBytes.zip(fileFirstBytes).all { it.first == it.second }
             }
@@ -55,7 +47,7 @@ class FileTypeService {
             byteArrayOf(0x50, 0x4B, 0x05, 0x06),
             byteArrayOf(0x50, 0x4B, 0x07, 0x08)
         )
-        
+
         val RAR_FILE_SIGNATURES = arrayOf(
             byteArrayOf(0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x01, 0x00),
             byteArrayOf(0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x00)
