@@ -16,8 +16,17 @@ class FileService(private val fileTypeService: FileTypeService, private  val arc
 
 
     fun files(defaultParentPath: String, requestedParentFileId: FileId?): List<FileDto> {
-        val parentFile = if (requestedParentFileId != null) cached(requestedParentFileId) else File(defaultParentPath)
+        val result = if (requestedParentFileId == null) listOf(File(defaultParentPath)) else files(requestedParentFileId)
 
+        return result.map {
+            val id = id(it)
+            cache(it, id)
+            FileDto(id, it.name, fileTypeService.type(it), mayHaveChildren(it))
+        }
+    }
+
+    private fun files(requestedParentFileId: FileId?): Collection<File> {
+        val parentFile = cached(requestedParentFileId)
         //todo error processing
         checkNotNull(parentFile) { "file with id $requestedParentFileId was not found" }
         check(mayHaveChildren(parentFile)) { "file ${parentFile.name} cannot have children" }
@@ -25,14 +34,9 @@ class FileService(private val fileTypeService: FileTypeService, private  val arc
         val parentFileId = requestedParentFileId ?: id(parentFile)
         cache(parentFile, parentFileId)
 
-        val children = cachedChildren(parentFileId) ?: children(parentFile)
-        cacheChildren(children, parentFileId)
-
-        return children.map {
-            val id = id(it)
-            cache(it, id)
-            FileDto(id, it.name, fileTypeService.type(it), mayHaveChildren(it))
-        }
+        val result = cachedChildren(parentFileId) ?: children(parentFile)
+        cacheChildren(result, parentFileId)
+        return result
     }
 
     private fun children(parentFile: File): List<File> {

@@ -37,6 +37,7 @@ fun Application.module(testing: Boolean = false) {
             enable(SerializationFeature.INDENT_OUTPUT)
         }
     }
+
     install(Koin) {
         modules(koinModule)
     }

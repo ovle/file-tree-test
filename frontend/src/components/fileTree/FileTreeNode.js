@@ -1,12 +1,11 @@
 import React from "react";
 
-const FileTreeNode = ({file, onClick}) =>
+const FileTreeNode = ({file: node, onClick}) =>
     (
         <div onClick={() => {
-            onClick(file);
+            onClick(node);
         }}>
-            <div>FileTreeNode</div>
-            <div>{file.name}</div>
+            <div>{node.file.name}</div>
         </div>
     );
 

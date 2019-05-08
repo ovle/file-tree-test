@@ -1,15 +1,10 @@
 import React from "react";
-import FileTreeNode from "./FileTreeNode";
+import FileTreeBranch from "./FileTreeBranch";
 
-const FileTree = ({files, onFileClick}) => (
+const FileTree = ({root, onNodeClick, getChildren}) => (
     <div>
         <div>FileTree</div>
-        {
-            files.map((file, index) => (
-                    <FileTreeNode file={file} onClick={onFileClick}/>
-                )
-            )
-        }
+        <FileTreeBranch branchRoot={root} onClick={onNodeClick} getChildren={getChildren}/>
     </div>
 );
 
