@@ -1,4 +1,4 @@
-package fileTree
+package file.service
 
 import FileDto.Type.*
 import org.slf4j.LoggerFactory
@@ -17,19 +17,26 @@ class FileTypeService {
     fun type(file: File): FileDto.Type {
         return when {
             file.isDirectory -> Directory
+            isOpenableArchive(file) -> OpenableArchive
             isArchive(file) -> Archive
             isImage(file) -> Image
             else -> Other
         }
     }
 
-    private fun isImage(file: File) = ImageIO.read(file) != null
+    private fun isOpenableArchive(file: File) = testSignatures(file,
+        file.service.FileTypeService.Companion.ZIP_FILE_SIGNATURES
+    )
 
-    private fun isArchive(file: File) = testSignatures(file, ZIP_FILE_SIGNATURES) || testSignatures(file, RAR_FILE_SIGNATURES)
+    private fun isArchive(file: File) = testSignatures(file, file.service.FileTypeService.Companion.ZIP_FILE_SIGNATURES) || testSignatures(file,
+        file.service.FileTypeService.Companion.RAR_FILE_SIGNATURES
+    )
+
+    private fun isImage(file: File) = ImageIO.read(file) != null
 
     private fun testSignatures(file: File, signatures: Array<ByteArray>) =
         DataInputStream(BufferedInputStream(FileInputStream(file))).use { inputStream ->
-            val fileFirstBytes = ByteArray(MAX_SIGNATURE_LENGTH)
+            val fileFirstBytes = ByteArray(file.service.FileTypeService.Companion.MAX_SIGNATURE_LENGTH)
             val bytesRead = inputStream.read(fileFirstBytes)
             signatures.any {
                     signatureBytes ->
