@@ -8,13 +8,11 @@ export type FileDto = {
 
 export class FileTreeNodeDto {
     file: FileDto;
-    opened: boolean = false;
+    children: Array<FileTreeNodeDto> = [];
+    isLoaded: boolean; //todo is client caching needed? how to evict ?
 
-    parentId: number;
-    // children: Array<FileTreeNodeDto> = [];
-
-    constructor(file: FileDto, parentId: number) {
+    constructor(file: FileDto) {
         this.file = file;
-        this.parentId = parentId;
+        this.isLoaded = false;
     }
 }

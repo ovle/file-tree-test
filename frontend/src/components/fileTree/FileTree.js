@@ -1,10 +1,10 @@
 import React from "react";
 import FileTreeBranch from "./FileTreeBranch";
 
-const FileTree = ({root, onNodeClick, getChildren}) => (
+const FileTree = ({root, onNodeClick}) => (
     <div>
         <div>FileTree</div>
-        <FileTreeBranch branchRoot={root} onNodeClick={onNodeClick} getChildren={getChildren}/>
+        <FileTreeBranch branchRoot={root} onNodeClick={onNodeClick}/>
     </div>
 );
 
