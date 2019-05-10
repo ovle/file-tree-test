@@ -4,7 +4,7 @@ import FileTreeBranch from "./FileTreeBranch";
 const FileTree = ({root, onNodeClick}) => (
     <div>
         <div>FileTree</div>
-        <FileTreeBranch branchRoot={root} onNodeClick={onNodeClick}/>
+        {root && <FileTreeBranch branchRoot={root} onNodeClick={onNodeClick}/>}
     </div>
 );
 

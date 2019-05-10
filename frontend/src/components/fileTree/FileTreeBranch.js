@@ -5,23 +5,24 @@ import FileTreeNode from "./FileTreeNode";
 
 /**
  * Expandable tree branch
- *
  */
-class FileTreeBranch extends Component{
+class FileTreeBranch extends Component {
 
     constructor(props) {
         super(props);
-        //todo read from ls
-        this.state = { isOpened: false };
+        this.state = {isOpened: props.branchRoot.isOpened}; // todo duplicated part of state
     }
 
     onBranchNodeClick = (node) => {
-        console.log(`onBranchNodeClick: ${node.file.id}`);
+        if (!node.file.mayHaveChildren) return;
+
         //todo show loader
         let onSuccessLoading = () => {
-            console.log(`onSuccessLoading: ${node.file.id}`);
+            // console.log(`onSuccessLoading: ${node.file.id}`);
             this.setState((prevState) => {
                 return {isOpened: !prevState.isOpened}
+            }, () => {
+                node.isOpened = this.state.isOpened
             });
             //todo hide loader
             node.isLoaded = true;
@@ -36,24 +37,24 @@ class FileTreeBranch extends Component{
     };
 
     render() {
-        let { branchRoot, onNodeClick } = this.props;
-        let { isOpened } = this.state;
+        let {branchRoot, onNodeClick} = this.props;
+        let {isOpened} = this.state;
         let children = branchRoot.children;
         return (
             <div>
                 <FileTreeNode file={branchRoot} onClick={this.onBranchNodeClick}/>
 
                 {isOpened &&
-                    <div>
-                        {
-                            children.map((node) => (
+                <div>
+                    {
+                        children.map((node) => (
                                 <div key={node.file.id}>
                                     <FileTreeBranch branchRoot={node} onNodeClick={onNodeClick}/>
                                 </div>
-                                )
                             )
-                        }
-                    </div>
+                        )
+                    }
+                </div>
                 }
             </div>
         );

@@ -2,7 +2,10 @@ import React, {Component} from "react";
 import FileTree from "./FileTree";
 import {fetchData} from "../../api/httpClient";
 import {FileTreeNodeDto} from "../../model/file";
+import ls from "local-storage";
 
+
+const STATE_STORAGE_KEY = "STATE_STORAGE_KEY";
 
 const fetchRoot = (success: (root: any) => void) => {
     return fetchData(
@@ -27,10 +30,12 @@ class FileTreeContainer extends Component {
     constructor(props) {
         super(props);
         //todo read from ls
-        this.state = {root: null};
+        this.state = ls.get(STATE_STORAGE_KEY) || {root: null};
     }
 
     componentDidMount = () => {
+        if (this.state.root) return;
+
         fetchRoot(
             (root) => {
                 this.setState(() => {
@@ -49,13 +54,19 @@ class FileTreeContainer extends Component {
 
                 this.setState((prevState) => {
                     return {root: prevState.root}
-                }, onSuccessLoading)
+                }, this.onSuccessLoading(onSuccessLoading))
             }
         );
     };
 
+    onSuccessLoading(onSuccessLoading) {
+        ls.set(STATE_STORAGE_KEY, this.state);
+
+        return onSuccessLoading;
+    }
+
     render = () => <div>
-        {this.state.root && <FileTree root={this.state.root} onNodeClick={this.onNodeClick}/>}
+        <FileTree root={this.state.root} onNodeClick={this.onNodeClick}/>
     </div>;
 }
 
