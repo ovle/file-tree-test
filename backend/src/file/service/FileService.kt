@@ -15,17 +15,12 @@ class FileService(private val fileTypeService: FileTypeService, private  val arc
     private val childrenByParentId = mutableMapOf<FileId, Collection<File>>()
 
 
-    fun files(defaultParentPath: String, requestedParentFileId: FileId?): List<FileDto> {
-        val result = if (requestedParentFileId == null) listOf(File(defaultParentPath)) else files(requestedParentFileId)
+    fun root(rootPath: String) = File(rootPath).run { this.toDto() }
 
-        return result.map {
-            val id = id(it)
-            cache(it, id)
-            FileDto(id, it.name, fileTypeService.type(it), mayHaveChildren(it))
-        }
-    }
+    fun files(parentFileId: FileId) = children(parentFileId).map { it.toDto() }
 
-    private fun files(requestedParentFileId: FileId?): Collection<File> {
+
+    private fun children(requestedParentFileId: FileId?): Collection<File> {
         val parentFile = cached(requestedParentFileId)
         //todo error processing
         checkNotNull(parentFile) { "file with id $requestedParentFileId was not found" }
@@ -65,6 +60,13 @@ class FileService(private val fileTypeService: FileTypeService, private  val arc
     private fun cachedChildren(fileId: FileId?) = childrenByParentId[fileId]
 
     private fun id(file: File) = file.absolutePath.hashCode()
+
+    private fun File.toDto(): FileDto {
+        val id = id(this)
+        cache(this, id)
+        return FileDto(id, this.name, fileTypeService.type(this), mayHaveChildren(this))
+    }
+
 
     companion object {
         private val logger = LoggerFactory.getLogger(FileService::class.java)

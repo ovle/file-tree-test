@@ -20,7 +20,6 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
-    val defaultRootPath = this.environment.config.property("ktor.application.defaultRootPath").getString();
 
     install(CORS) {
         anyHost()
@@ -43,11 +42,22 @@ fun Application.module(testing: Boolean = false) {
     }
 
     val fileService by inject<FileService>()
+    val defaultRootPath = this.environment.config.property("ktor.application.defaultRootPath").getString();
 
+    //todo not restful, as it's supposed that root request called by client before any children request.
+    // may be fixed by pre-fetch and cache all the tree from root during initialization
     routing {
-        get("/files/{rootFileId?}") {
-            val rootFileId = call.parameters["rootFileId"]
-            val files = fileService.files(defaultRootPath, rootFileId?.toInt())
+        get("/files/root") {
+            val files = fileService.root(defaultRootPath)
+            call.respond(HttpStatusCode.OK, files)
+        }
+
+        get("/files/{parentFileId}") {
+            val parentFileId = call.parameters["parentFileId"]
+            checkNotNull(parentFileId)
+            checkNotNull(parentFileId.toIntOrNull()) { "invalid parentFileId format: $parentFileId" }
+
+            val files = fileService.files(parentFileId.toInt())
             call.respond(HttpStatusCode.OK, files)
         }
     }
