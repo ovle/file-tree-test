@@ -1,40 +1,49 @@
-import React from "react";
+import React, {Component} from "react";
 import FileTree from "./FileTree";
 import {fetchData} from "../../api/httpClient";
 import {FileTreeNodeDto} from "../../model/file";
 
 
-const fetchFiles = (parentFileId?: number, success: (data: any) => void) => {
+const fetchRoot = (success: (root: any) => void) => {
     return fetchData(
-        `/files/${parentFileId || ''}`, (data) => { success(data.map (file => new FileTreeNodeDto(file, parentFileId))) }
+        `/files/root`, (root) => { success(new FileTreeNodeDto(root)) }
     )
 };
 
-class FileTreeContainer extends React.Component {
+const fetchFiles = (parentFileId: number, success: (children: any) => void) => {
+    return fetchData(
+        `/files/${parentFileId}`, (children) => { success(children.map (file => new FileTreeNodeDto(file, parentFileId))) }
+    )
+};
 
-    constructor() {
-        super();
-        this.state = { root: null, childrenCache: {} };
+class FileTreeContainer extends Component {
+
+    constructor(props) {
+        super(props);
+        //todo read from ls
+        this.state = { root: null, nodes: {}, nodesByParent: {} };
     }
 
     componentDidMount = () => {
-        fetchFiles(
-            this.state.root ? this.state.root.file.id : "" ,
-            (data) => {
+        fetchRoot(
+            (root) => {
                 this.setState(() => {
-                    return { root: data && data[0] }
+                    let nodes = {};
+                    nodes[root.file.id] = root;
+                    return { root: root, nodes: nodes }
                 })
             }
         );
     };
 
-    onFileClick = (node) => {
+    onNodeClick = (node) => {
         let parentFileId = node.file.id;
         fetchFiles(
             parentFileId ,
             (data) => {
-                this.setState(() => {
-                    return { childrenCache: { parentFileId: data } }
+                this.setState((prevState) => {
+                    let nodes = { parentFileId: data, ...prevState.nodes };
+                    return { nodes: nodes }
                 })
             }
         );
@@ -42,12 +51,12 @@ class FileTreeContainer extends React.Component {
 
     getChildren = (node) => {
         let parentFileId = node.file.id;
-        return this.state.childrenCache[parentFileId];
+        return this.state.nodes[parentFileId];
     };
 
     render = () => <div>
         <div>FileTreeContainer</div>
-        { this.state.root && <FileTree files={[this.state.root]} onFileClick={this.onFileClick} getChildren = {this.getChildren}/> }
+        { this.state.root && <FileTree root={this.state.root} onNodeClick={this.onNodeClick} getChildren={this.getChildren}/> }
     </div>;
 }
 

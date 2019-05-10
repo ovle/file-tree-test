@@ -3,16 +3,12 @@
 import React, {Component} from "react";
 import FileTreeNode from "./FileTreeNode";
 
-class FileTreeBranch extends Component<{ branchRoot: any, onNodeClick: any, getChildren: any }> {
+class FileTreeBranch extends Component{
 
-    constructor() {
-        super();
-        this.state = { nodes: [] };
-    }
-
-    componentWillReceiveProps(nextProps: any, nextContext: any): void {
-        let { branchRoot, getChildren } = nextProps;
-        this.setState(() => ({nodes: getChildren(branchRoot)}))
+    constructor(props) {
+        super(props);
+        let { branchRoot, getChildren } = this.props;
+        this.state = { nodes: getChildren(branchRoot) };
     }
 
     render() {
