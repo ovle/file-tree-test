@@ -2,6 +2,7 @@
 
 import React, {Component} from "react";
 import FileTreeNode from "./FileTreeNode";
+import {Branch} from "../styles";
 
 /**
  * Expandable tree branch
@@ -17,6 +18,7 @@ class FileTreeBranch extends Component {
         if (!node.file.mayHaveChildren) return;
 
         //todo show loader
+        //todo component can be unmounted when response has been received
         let onSuccessLoading = () => {
             // console.log(`onSuccessLoading: ${node.file.id}`);
             this.setState((prevState) => {
@@ -28,11 +30,16 @@ class FileTreeBranch extends Component {
             node.isLoaded = true;
         };
 
+        let onError = (error) => {
+            //todo
+            console.log("FileTreeBranch error");
+        };
+
         if (node.isLoaded) {
             onSuccessLoading();
         } else {
             let {onNodeClick} = this.props;
-            onNodeClick(node, onSuccessLoading);
+            onNodeClick(node, onSuccessLoading, onError);
         }
     };
 
@@ -40,10 +47,16 @@ class FileTreeBranch extends Component {
         let {branchRoot, onNodeClick} = this.props;
         let {isOpened} = this.state;
         let children = branchRoot.children;
-        return (
-            <div>
-                <FileTreeNode file={branchRoot} onClick={this.onBranchNodeClick}/>
+        let mayHaveChildren = branchRoot.file.mayHaveChildren;
+        let openerComponent = <div style={{"text-align": "left"}} onClick={() => this.onBranchNodeClick(branchRoot)}>{isOpened ? "[-]" : "[+]"}</div>;
 
+        return (
+            <Branch>
+                <div>
+                    {/*todo loader */}
+                    {/*todo fine open/close control */}
+                    {mayHaveChildren && openerComponent}<FileTreeNode file={branchRoot}/>
+                </div>
                 {isOpened &&
                 <div>
                     {
@@ -56,7 +69,7 @@ class FileTreeBranch extends Component {
                     }
                 </div>
                 }
-            </div>
+            </Branch>
         );
     }
 }

@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import {FileTreeNodeDto} from "../../model/file";
+import messages from "../../utils/messages";
 import AxiosStatic from "axios";
 
 
@@ -29,23 +30,27 @@ const withApi = (baseURL, WrappedComponent) => {
             )
         };
 
-        fetchChildren = (parentId: number, success: (children: any) => void, error: (error: ApiError) => void) => {
+        fetchChildren = (parentId: number, onSuccess: (children: any) => void, onError: (error: ApiError) => void) => {
             return this.fetchData(
                 `/files/${parentId}`, (children) => {
-                    success(children.map(file => new FileTreeNodeDto(file)))
-                }, error
+                    onSuccess(children.map(file => new FileTreeNodeDto(file)))
+                }, onError
             )
         };
 
-        fetchData = (url: string, success: (data: any) => void, error: (error: ApiError) => void) => {
+        fetchData = (url: string, onSuccess: (data: any) => void, onError: (error: ApiError) => void) => {
             this.state.httpClientInstance.get(url)
                 .then(function (response) {
-                    success(response.data);
+                    onSuccess(response.data);
                 })
                 .catch(function (error) {
-                    error(error);
+                    if (error.message === "Network Error") {
+                        error = { text : messages.error.serverUnavailable}
+                    }
+                    onError(error);
                 })
                 .then(function () {
+                    //todo
                 });
         };
 

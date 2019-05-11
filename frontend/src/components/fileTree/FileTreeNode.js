@@ -1,12 +1,12 @@
 import React from "react";
+import {Node} from "../styles.js";
 
-const FileTreeNode = ({file: node, onClick}) =>
+//todo icon
+const FileTreeNode = ({file: node}) =>
     (
-        <div onClick={() => {
-            onClick(node);
-        }}>
+        <Node>
             <div>{node.file.name}</div>
-        </div>
+        </Node>
     );
 
 export default FileTreeNode;
