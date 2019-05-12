@@ -1,40 +1,49 @@
 package file.service
 
+import AppConfig
 import FileDto
-import FileDto.Type.*
+import FileDto.Type.Directory
+import FileDto.Type.OpenableArchive
+import cache
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.lang.IllegalArgumentException
 
 typealias FileId = Int
 
-class FileService(private val fileTypeService: FileTypeService, private  val archiveService: ArchiveService) {
 
-    //todo concurrent/synchronized? eviction?
-    private val filesById = mutableMapOf<FileId, File>()
-    private val childrenByParentId = mutableMapOf<FileId, Collection<File>>()
+class FileService(
+    private val fileTypeService: FileTypeService,
+    private val archiveService: ArchiveService,
+    private val config: AppConfig
+) {
 
-
-    fun root(rootPath: String) = File(rootPath).run { this.toDto() }
-
-    fun files(parentFileId: FileId) = children(parentFileId).map { it.toDto() }
-
-
-    private fun children(requestedParentFileId: FileId?): Collection<File> {
-        val parentFile = cached(requestedParentFileId)
-        //todo error processing
-        checkNotNull(parentFile) { "file with id $requestedParentFileId was not found" }
-        check(mayHaveChildren(parentFile)) { "file ${parentFile.name} cannot have children" }
-
-        val parentFileId = requestedParentFileId ?: id(parentFile)
-        cache(parentFile, parentFileId)
-
-        val result = cachedChildren(parentFileId) ?: children(parentFile)
-        cacheChildren(result, parentFileId)
-        return result
+    private val filesById = cache<FileId, File?>(config.fileCacheExpireTime) {
+            fileId -> file(fileId!!).also { logger.info("read file from FS: ${it!!.name}") }
     }
 
-    private fun children(parentFile: File): List<File> {
+    private val childrenByParentId = cache<File, Collection<File>?>(config.fileCacheExpireTime) {
+            file -> childrenFiles(file!!).also { logger.info("read children from FS, parent: ${file.name}") }
+    }
+
+    
+    fun root() = File(config.defaultRootPath).run { this.toDto() }
+
+    fun files(parentFileId: FileId) = childrenFiles(parentFileId).map { it.toDto() }
+
+
+    private fun file(fileId: FileId) = File(config.defaultRootPath).walkTopDown().find { id(it) == fileId }
+
+    private fun childrenFiles(parentFileId: FileId): Collection<File> {
+        val parentFile = cachedFile(parentFileId)
+
+        //todo normal case if the file was deleted!
+        checkNotNull(parentFile) { "file with id $parentFileId was not found" }
+        check(mayHaveChildren(parentFile)) { "file ${parentFile.name} cannot have children" }
+
+        return cachedChildren(parentFile) ?: listOf()
+    }
+
+    private fun childrenFiles(parentFile: File): List<File> {
         val parentType = fileTypeService.type(parentFile)
         return when (parentType) {
             Directory -> parentFile
@@ -47,25 +56,13 @@ class FileService(private val fileTypeService: FileTypeService, private  val arc
         return fileTypeService.type(parentFile) in setOf(Directory, OpenableArchive)
     }
 
-    private fun cache(file: File, fileId: FileId) {
-        filesById[fileId] = file
-    }
+    private fun cachedFile(fileId: FileId) = filesById.get(fileId)
 
-    private fun cacheChildren(children: Collection<File>, fileId: FileId) {
-        childrenByParentId[fileId] = children
-    }
+    private fun cachedChildren(file: File) = childrenByParentId[file]
 
-    private fun cached(fileId: FileId?) = filesById[fileId]
+    private fun id(file: File) = file.hashCode()
 
-    private fun cachedChildren(fileId: FileId?) = childrenByParentId[fileId]
-
-    private fun id(file: File) = file.absolutePath.hashCode()
-
-    private fun File.toDto(): FileDto {
-        val id = id(this)
-        cache(this, id)
-        return FileDto(id, this.name, fileTypeService.type(this), mayHaveChildren(this))
-    }
+    private fun File.toDto() = FileDto(id(this), this.name, fileTypeService.type(this), mayHaveChildren(this))
 
 
     companion object {

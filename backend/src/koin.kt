@@ -5,7 +5,13 @@ import org.koin.dsl.module
 import org.koin.experimental.builder.single
 
 val koinModule = module(createdAtStart = true) {
-    single<FileService>()
+    single { (fileTypeService: FileTypeService, archiveService: ArchiveService, config: AppConfig) ->
+        FileService(
+            fileTypeService,
+            archiveService,
+            config
+        )
+    }
     single<ArchiveService>()
     single<FileTypeService>()
 }
