@@ -25,10 +25,17 @@ class FileService(
             file -> childrenFiles(file!!).also { logger.info("read children from FS, parent: ${file.name}") }
     }
 
-    
+    /**
+     * Path to rhe root of the file tree
+     */
     fun root() = File(config.defaultRootPath).run { this.toDto() }
 
-    fun files(parentFileId: FileId) = childrenFiles(parentFileId).map { it.toDto() }
+    /**
+     * List of the children files
+     * Result depends on parent's type, @see [mayHaveChildren]
+     * @param parentFileId  id of the parent file
+     */
+    fun children(parentFileId: FileId) = childrenFiles(parentFileId).map { it.toDto() }
 
 
     private fun file(fileId: FileId) = File(config.defaultRootPath).walkTopDown().find { id(it) == fileId }
@@ -36,11 +43,12 @@ class FileService(
     private fun childrenFiles(parentFileId: FileId): Collection<File> {
         val parentFile = cachedFile(parentFileId)
 
-        //todo normal case if the file was deleted!
+        //todo normal case if the file was deleted
         checkNotNull(parentFile) { "file with id $parentFileId was not found" }
+        //todo normal case on some kinds of file/directory renaming
         check(mayHaveChildren(parentFile)) { "file ${parentFile.name} cannot have children" }
 
-        return cachedChildren(parentFile) ?: listOf()
+        return cachedChildrenFiles(parentFile) ?: listOf()
     }
 
     private fun childrenFiles(parentFile: File): List<File> {
@@ -58,7 +66,7 @@ class FileService(
 
     private fun cachedFile(fileId: FileId) = filesById.get(fileId)
 
-    private fun cachedChildren(file: File) = childrenByParentId[file]
+    private fun cachedChildrenFiles(parentFile: File) = childrenByParentId[parentFile]
 
     private fun id(file: File) = file.hashCode()
 

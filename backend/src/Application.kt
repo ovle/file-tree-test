@@ -9,7 +9,6 @@ import io.ktor.features.CORS
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.parametersOf
 import io.ktor.jackson.jackson
 import io.ktor.response.respond
 import io.ktor.routing.get
@@ -66,7 +65,7 @@ fun Application.module(testing: Boolean = false) {
             requireNotNull(parentFileId)
             requireNotNull(parentFileId.toIntOrNull()) { "invalid parentFileId format: $parentFileId" }
 
-            val files = fileService.files(parentFileId.toInt())
+            val files = fileService.children(parentFileId.toInt())
             call.respond(HttpStatusCode.OK, files)
         }
     }

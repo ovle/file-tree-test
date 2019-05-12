@@ -8,7 +8,6 @@ import java.io.File
 import java.io.FileInputStream
 import javax.imageio.ImageIO
 
-
 class FileTypeService {
 
     fun type(file: File): FileDto.Type {
@@ -23,7 +22,8 @@ class FileTypeService {
 
     private fun isOpenableArchive(file: File) = testSignatures(file, ZIP_FILE_SIGNATURES)
 
-    private fun isArchive(file: File) = testSignatures(file, ZIP_FILE_SIGNATURES) || testSignatures(file, RAR_FILE_SIGNATURES)
+    private fun isArchive(file: File) =
+        testSignatures(file, ZIP_FILE_SIGNATURES) || testSignatures(file, RAR_FILE_SIGNATURES)
 
     private fun isImage(file: File) = ImageIO.read(file) != null
 
