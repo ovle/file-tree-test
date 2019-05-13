@@ -1,14 +1,16 @@
 package file.service
 
 import AppConfig
+import FileTreeErrorDto.*
 import FileDto
 import FileDto.Type.Directory
 import FileDto.Type.OpenableArchive
+import FileId
 import cache
+import failIf
+import failIfNot
 import org.slf4j.LoggerFactory
 import java.io.File
-
-typealias FileId = Int
 
 
 class FileService(
@@ -18,17 +20,17 @@ class FileService(
 ) {
 
     private val filesById = cache<FileId, File?>(config.fileCacheExpireTime) {
-            fileId -> file(fileId!!).also { logger.info("read file from FS: ${it!!.name}") }
+            fileId -> file(fileId!!)
     }
 
     private val childrenByParentId = cache<File, Collection<File>?>(config.fileCacheExpireTime) {
-            file -> childrenFiles(file!!).also { logger.info("read children from FS, parent: ${file.name}") }
+            file -> childrenFiles(file!!)
     }
 
     /**
      * Path to rhe root of the file tree
      */
-    fun root() = File(config.defaultRootPath).run { this.toDto() }
+    fun root() = rootFile().run { this.toDto() }
 
     /**
      * List of the children files
@@ -38,15 +40,24 @@ class FileService(
     fun children(parentFileId: FileId) = childrenFiles(parentFileId).map { it.toDto() }
 
 
-    private fun file(fileId: FileId) = File(config.defaultRootPath).walkTopDown().find { id(it) == fileId }
+    private fun file(fileId: FileId) = rootFile().walkTopDown()
+        .find { id(it) == fileId }
+        .also {
+            failIf(it == null, ErrorType.FileNotFound, mapOf(PayloadKey.FileId to fileId))
+            failIfNot(it!!.canRead(), ErrorType.FileNotReadable, mapOf(PayloadKey.FileName to it.name))
+        }
+
+    private fun rootFile() = File(config.defaultRootPath).also {
+        check(it.exists()) { "root file is not exists. path = ${config.defaultRootPath}" }
+
+        failIfNot(it.canRead(), ErrorType.FileNotReadable, mapOf(PayloadKey.FileName to it.name))
+    }
 
     private fun childrenFiles(parentFileId: FileId): Collection<File> {
         val parentFile = cachedFile(parentFileId)
 
-        //todo normal case if the file was deleted
-        checkNotNull(parentFile) { "file with id $parentFileId was not found" }
-        //todo normal case on some kinds of file/directory renaming
-        check(mayHaveChildren(parentFile)) { "file ${parentFile.name} cannot have children" }
+        failIf(parentFile == null, ErrorType.FileNotFound, mapOf(PayloadKey.ParentFileId to parentFileId))
+        failIfNot(mayHaveChildren(parentFile!!), ErrorType.FileCannotHaveChildren, mapOf(PayloadKey.FileName to parentFile.name))
 
         return cachedChildrenFiles(parentFile) ?: listOf()
     }
@@ -61,7 +72,7 @@ class FileService(
     }
 
     private fun mayHaveChildren(parentFile: File): Boolean {
-        return fileTypeService.type(parentFile) in setOf(Directory, OpenableArchive)
+        return fileTypeService.type(parentFile) in FILE_TYPES_WITH_CHILDREN
     }
 
     private fun cachedFile(fileId: FileId) = filesById.get(fileId)
@@ -75,5 +86,6 @@ class FileService(
 
     companion object {
         private val logger = LoggerFactory.getLogger(FileService::class.java)
+        private val FILE_TYPES_WITH_CHILDREN = setOf(Directory, OpenableArchive)
     }
 }

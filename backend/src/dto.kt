@@ -1,6 +1,18 @@
-/**
- * todo name and feature
- * @author PasechnikMN, 08.05.2019 13:25
- */
 
-data class ErrorDto(val message: String)
+data class FileTreeErrorDto(val type: ErrorType, val payload: Map<PayloadKey, Any>? = mapOf()) {
+    
+    enum class PayloadKey {
+        FileId,
+        FileName,
+        ParentFileId,
+        ParentFileName
+    }
+
+    enum class ErrorType {
+        FileNotFound,
+        FileNotReadable,
+        FileCannotHaveChildren,
+        ArchiveError,
+        Other
+    }
+}

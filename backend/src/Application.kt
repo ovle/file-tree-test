@@ -1,3 +1,5 @@
+import FileTreeErrorDto.ErrorType.Other
+import FileTreeErrorDto.ErrorType.ArchiveError
 import com.fasterxml.jackson.databind.SerializationFeature
 import file.service.ArchiveService
 import file.service.FileService
@@ -13,9 +15,12 @@ import io.ktor.jackson.jackson
 import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.routing
+import net.lingala.zip4j.exception.ZipException
 import org.koin.core.parameter.parametersOf
 import org.koin.ktor.ext.Koin
 import org.koin.ktor.ext.inject
+import org.slf4j.LoggerFactory
+import java.util.concurrent.ExecutionException
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
@@ -24,14 +29,12 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
 
-    install(CORS) {
+    install(CORS) {                                                                                                           
         anyHost()
     }
 
     install(StatusPages) {
-        exception<Throwable> { cause ->
-            call.respond(mapOf("error" to ErrorDto(cause.localizedMessage)))
-        }
+        statusPagesConfig()
     }
 
     install(ContentNegotiation) {
@@ -44,8 +47,13 @@ fun Application.module(testing: Boolean = false) {
         modules(koinModule)
     }
 
-    //todo experimental api usage
+    routing()
+}
+
+
+private fun Application.routing() {
     val config = this.environment.config
+    //todo experimental api usage
     val appConfig = AppConfig(
         defaultRootPath = config.property("ktor.application.defaultRootPath").getString(),
         fileCacheExpireTime = config.property("ktor.application.fileCacheExpireTime").getString().toLong()
@@ -62,11 +70,40 @@ fun Application.module(testing: Boolean = false) {
 
         get("/files/{parentFileId}") {
             val parentFileId = call.parameters["parentFileId"]
-            requireNotNull(parentFileId)
-            requireNotNull(parentFileId.toIntOrNull()) { "invalid parentFileId format: $parentFileId" }
-
-            val files = fileService.children(parentFileId.toInt())
-            call.respond(HttpStatusCode.OK, files)
+            val parentIdIsCorrect = parentFileId!!.toIntOrNull() == null
+            when {
+                parentIdIsCorrect -> call.respond(
+                    HttpStatusCode.BadRequest,
+                    "invalid parentFileId format: $parentFileId"
+                )
+                else -> {
+                    val files = fileService.children(parentFileId.toInt())
+                    call.respond(HttpStatusCode.OK, files)
+                }
+            }
         }
+    }
+}
+
+private fun StatusPages.Configuration.statusPagesConfig() {
+    val logger = LoggerFactory.getLogger(this::class.java)
+
+    exception<FileTreeException> { cause ->
+        call.respond(mapOf("error" to cause.error))
+    }
+    exception<ExecutionException> { cause ->
+        val payload = when (cause.cause) {
+            is FileTreeException -> (cause.cause as FileTreeException).error
+            is ZipException -> FileTreeErrorDto(ArchiveError)
+            else -> FileTreeErrorDto(Other)
+        }
+        call.respond(mapOf("error" to payload))
+    }
+    exception<ZipException> { _ ->
+        call.respond(mapOf("error" to FileTreeErrorDto(ArchiveError)))
+    }
+    exception<Throwable> { cause ->
+        logger.error("error: ", cause)
+        call.respond(mapOf("error" to FileTreeErrorDto(Other)))
     }
 }
