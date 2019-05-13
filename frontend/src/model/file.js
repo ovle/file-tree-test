@@ -1,9 +1,11 @@
 // @flow
 
+type FileType = "Directory" | "Image" | "Archive" | "OpenableArchive" | "Other";
+
 export type FileDto = {
     id: number,
     name?: string,
-    type: string,
+    type: FileType,
     mayHaveChildren: boolean
 }
 

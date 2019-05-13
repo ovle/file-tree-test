@@ -3,8 +3,8 @@ package file.service
 import AppConfig
 import FileTreeErrorDto.*
 import FileDto
-import FileDto.Type.Directory
-import FileDto.Type.OpenableArchive
+import FileDto.FileType.Directory
+import FileDto.FileType.OpenableArchive
 import FileId
 import cache
 import failIf

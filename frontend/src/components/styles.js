@@ -1,25 +1,24 @@
-import styled, {css} from 'styled-components'
+import styled from 'styled-components'
 
 
 const Tree = styled.div`
-  background: gray;
+  // background: #2B2B2B;
+  border: 2px double #A9B7C6;
   cursor: pointer; 
   user-select: none;
 `;
 
 const Branch = styled.div`
-  margin-left: 4em;
+  margin-top: 5px;
+  padding-left: 4em;
 `;
 
-const ClosedBranch = styled.div`
-`;
-
-const OpenedBranch = styled.div`
-`;
-
-const Node = styled.div`
-  color: white;
-  text-align: left;
+const Node = styled.span`
+  color: #619647;
+  textAlign: left;
+  margin-left: 5px;
+  padding: 2px;
+    // border: 1px double #A9B7C6;  
 `;
 
 const NodeLoader = styled.div`
@@ -36,5 +35,5 @@ const Error = styled.div`
 `;
 
 export {
-    Tree, Branch, ClosedBranch, OpenedBranch, Node, NodeLoader, Warning, Error
+    Tree, Branch, Node, NodeLoader, Warning, Error
 }

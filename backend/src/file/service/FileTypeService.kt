@@ -1,6 +1,6 @@
 package file.service
 
-import FileDto.Type.*
+import FileDto.FileType.*
 import org.slf4j.LoggerFactory
 import java.io.BufferedInputStream
 import java.io.DataInputStream
@@ -10,7 +10,7 @@ import javax.imageio.ImageIO
 
 class FileTypeService {
 
-    fun type(file: File): FileDto.Type {
+    fun type(file: File): FileDto.FileType {
         return when {
             file.isDirectory -> Directory
             isOpenableArchive(file) -> OpenableArchive

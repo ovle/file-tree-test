@@ -11,7 +11,7 @@ class FileTreeBranch extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {isOpened: props.branchRoot.isOpened}; // todo duplicated part of state
+        this.state = { isOpened: props.branchRoot.isOpened, isLoading: props.isLoading }; // todo duplicated part of state
     }
 
     onBranchNodeClick = (node) => {
@@ -20,7 +20,6 @@ class FileTreeBranch extends Component {
         //todo show loader
         //todo component can be unmounted when response has been received
         let onSuccessLoading = () => {
-            // console.log(`onSuccessLoading: ${node.file.id}`);
             this.setState((prevState) => {
                 return {isOpened: !prevState.isOpened}
             }, () => {
@@ -44,25 +43,26 @@ class FileTreeBranch extends Component {
     };
 
     render() {
-        let {branchRoot, onNodeClick} = this.props;
+        let {branchRoot, onNodeClick, isLoading, error} = this.props;
         let {isOpened} = this.state;
         let children = branchRoot.children;
         let mayHaveChildren = branchRoot.file.mayHaveChildren;
-        let openerComponent = <div style={{"text-align": "left"}} onClick={() => this.onBranchNodeClick(branchRoot)}>{isOpened ? "[-]" : "[+]"}</div>;
+        let loaderComponent = <span style={{"text-align": "left"}}>{"[loading...]"}</span>;
+        let openerComponent = <span style={{"text-align": "left"}} onClick={() => this.onBranchNodeClick(branchRoot)}>{isOpened ? "[-]" : "[+]"}</span>;
 
         return (
             <Branch>
-                <div>
-                    {/*todo loader */}
-                    {/*todo fine open/close control */}
-                    {mayHaveChildren && openerComponent}<FileTreeNode file={branchRoot}/>
+                <div style={{"text-align": "left"}}>
+                    {/*todo fine controls */}
+                    { isLoading(branchRoot) ? loaderComponent : mayHaveChildren && openerComponent }
+                    <FileTreeNode file={branchRoot.file}/>
                 </div>
                 {isOpened &&
                 <div>
                     {
                         children.map((node) => (
                                 <div key={node.file.id}>
-                                    <FileTreeBranch branchRoot={node} onNodeClick={onNodeClick}/>
+                                    <FileTreeBranch branchRoot={node} onNodeClick={onNodeClick} isLoading={isLoading}/>
                                 </div>
                             )
                         )
