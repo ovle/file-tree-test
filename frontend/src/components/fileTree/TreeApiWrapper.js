@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import {FileTreeNodeDto} from "../../model/file";
-import AxiosStatic from "axios";
+import AxiosStatic, {Cancel} from "axios";
 import type {FileTreeErrorDto} from "../../model/error";
 
 /**
@@ -34,13 +34,22 @@ const withApi = (baseURL, WrappedComponent) => {
         };
 
         fetchData = (url: string, onSuccess: (data: any) => void, onError: (error: any) => void, onResponse: () => void) => {
-            this.state.httpClientInstance.get(url)
+            let CancelToken = AxiosStatic.CancelToken;
+            let cancel;
+            let cancelTokenInstance = new CancelToken((c) => { cancel = c; });
+
+            this.state.httpClientInstance.get(url, { cancelToken:cancelTokenInstance })
                 .then(response => onSuccess(response.data))
                 .catch(error => {
+                    if (error instanceof Cancel) return;
+
                     let response = error.response;
                     return onError((response && response.data && response.data.error) || error.message);
                 })
                 .then(onResponse);
+
+            // noinspection JSUnusedAssignment
+            return cancel;
         };
 
         render = () => <div>

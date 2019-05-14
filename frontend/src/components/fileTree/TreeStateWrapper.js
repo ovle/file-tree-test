@@ -7,7 +7,7 @@ import messages from "../../utils/messages";
 /**
  * State-aware tree wrapper
  */
-const withState = ({stateStorage}, WrappedComponent) => {
+const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
 
     class TreeStateWrapper extends Component {
 
@@ -43,13 +43,23 @@ const withState = ({stateStorage}, WrappedComponent) => {
 
         onNodeClick = (node: FileTreeNodeDto, onSuccess) => {
             let parentId = node.file.id;
-            let {fetchChildren} = this.props;
-            let startLoading = fetchChildren(
+            this.setState((prevState) => {
+                let loadingFiles = new Set(prevState.loadingFiles);
+                loadingFiles.add(parentId);
+                return {loadingFiles: loadingFiles};
+            });
+
+            return this.props.fetchChildren(
                 parentId,
                 (children) => {
                     //todo hack. need move this to setState
                     node.children = children;
-                    this.setState((prevState) => ({root: prevState.root, error: null}), this.onSuccessLoading(onSuccess))
+                    if (!updateOnExpand) node.isLoaded = true;
+
+                    this.setState((prevState) => ({
+                        root: prevState.root,
+                        error: null
+                    }), this.onSuccessLoading(onSuccess))
                 },
                 (error) => {
                     this.processError(error, node);
@@ -62,18 +72,10 @@ const withState = ({stateStorage}, WrappedComponent) => {
                     });
                 }
             );
-
-            this.setState((prevState) => {
-                let loadingFiles = new Set(prevState.loadingFiles);
-                loadingFiles.add(parentId);
-                return {loadingFiles: loadingFiles};
-            }, startLoading);
-
         };
 
         //todo extract to separate component?
         processError(error, node: FileTreeNodeDto) {
-
             const errorMessage = error => {
                 //todo not sure how to make this check better
                 if (error === "Network Error") {

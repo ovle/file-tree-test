@@ -14,26 +14,31 @@ class FileTreeBranch extends Component {
         this.state = {isOpened: props.branchRoot.isOpened, isLoading: props.isLoading}; // todo duplicated part of state
     }
 
+    //todo rewrite. should react to props change, not change state on callback
+    onSuccessLoading = () => {
+        this.setState((prevState) => {
+            return {isOpened: !prevState.isOpened}
+        }, () => {
+            let {branchRoot} = this.props;
+            branchRoot.isOpened = this.state.isOpened
+        });
+    };
+
     onBranchNodeClick = (node) => {
         if (!node.file.mayHaveChildren) return;
 
-        //todo component can be unmounted when response has been received
-        let onSuccessLoading = () => {
-            this.setState((prevState) => {
-                return {isOpened: !prevState.isOpened}
-            }, () => {
-                node.isOpened = this.state.isOpened
-            });
-            node.isLoaded = true;
-        };
-
-        if (node.isLoaded) {
-            onSuccessLoading();
+        let {isOpened} = node;
+        if (isOpened || node.isLoaded) {
+            this.onSuccessLoading();
         } else {
             let {onNodeClick} = this.props;
-            onNodeClick(node, onSuccessLoading);
+            this.cancelExpanding = onNodeClick(node, this.onSuccessLoading);
         }
     };
+
+    componentWillUnmount(): void {
+        this.cancelExpanding && this.cancelExpanding();
+    }
 
     render() {
         let {branchRoot, onNodeClick, isLoading} = this.props;
