@@ -2,7 +2,7 @@
 
 import React, {Component} from "react";
 import FileTreeNode from "./FileTreeNode";
-import {Branch} from "../styles";
+import {Branch, NodeButton, TreeDiv} from "../styles";
 
 /**
  * Expandable tree branch
@@ -11,13 +11,12 @@ class FileTreeBranch extends Component {
 
     constructor(props) {
         super(props);
-        this.state = { isOpened: props.branchRoot.isOpened, isLoading: props.isLoading }; // todo duplicated part of state
+        this.state = {isOpened: props.branchRoot.isOpened, isLoading: props.isLoading}; // todo duplicated part of state
     }
 
     onBranchNodeClick = (node) => {
         if (!node.file.mayHaveChildren) return;
 
-        //todo show loader
         //todo component can be unmounted when response has been received
         let onSuccessLoading = () => {
             this.setState((prevState) => {
@@ -25,49 +24,43 @@ class FileTreeBranch extends Component {
             }, () => {
                 node.isOpened = this.state.isOpened
             });
-            //todo hide loader
             node.isLoaded = true;
-        };
-
-        let onError = (error) => {
-            //todo
-            console.log("FileTreeBranch error");
         };
 
         if (node.isLoaded) {
             onSuccessLoading();
         } else {
             let {onNodeClick} = this.props;
-            onNodeClick(node, onSuccessLoading, onError);
+            onNodeClick(node, onSuccessLoading);
         }
     };
 
     render() {
-        let {branchRoot, onNodeClick, isLoading, error} = this.props;
+        let {branchRoot, onNodeClick, isLoading} = this.props;
         let {isOpened} = this.state;
         let children = branchRoot.children;
         let mayHaveChildren = branchRoot.file.mayHaveChildren;
-        let loaderComponent = <span style={{"text-align": "left"}}>{"[loading...]"}</span>;
-        let openerComponent = <span style={{"text-align": "left"}} onClick={() => this.onBranchNodeClick(branchRoot)}>{isOpened ? "[-]" : "[+]"}</span>;
+        let loaderComponent = <NodeButton>{"[loading...]"}</NodeButton>;
+        let openerComponent = <NodeButton
+            onClick={() => this.onBranchNodeClick(branchRoot)}>{isOpened ? "[-]" : "[+]"}</NodeButton>;
 
         return (
             <Branch>
                 <div style={{"text-align": "left"}}>
                     {/*todo fine controls */}
-                    { isLoading(branchRoot) ? loaderComponent : mayHaveChildren && openerComponent }
+                    {isLoading(branchRoot) ? loaderComponent : mayHaveChildren && openerComponent}
                     <FileTreeNode file={branchRoot.file}/>
                 </div>
                 {isOpened &&
-                <div>
+                <TreeDiv>
                     {
                         children.map((node) => (
-                                <div key={node.file.id}>
-                                    <FileTreeBranch branchRoot={node} onNodeClick={onNodeClick} isLoading={isLoading}/>
-                                </div>
+                                <FileTreeBranch key={node.file.id} branchRoot={node} onNodeClick={onNodeClick}
+                                                isLoading={isLoading}/>
                             )
                         )
                     }
-                </div>
+                </TreeDiv>
                 }
             </Branch>
         );

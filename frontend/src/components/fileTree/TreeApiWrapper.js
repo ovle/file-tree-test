@@ -1,6 +1,5 @@
 import React, {Component} from "react";
 import {FileTreeNodeDto} from "../../model/file";
-import messages from "../../utils/messages";
 import AxiosStatic from "axios";
 import type {FileTreeErrorDto} from "../../model/error";
 
@@ -36,15 +35,10 @@ const withApi = (baseURL, WrappedComponent) => {
 
         fetchData = (url: string, onSuccess: (data: any) => void, onError: (error: any) => void, onResponse: () => void) => {
             this.state.httpClientInstance.get(url)
-                .then(function (response) {
-                    onSuccess(response.data);
-                })
-                .catch(function (error) {
-                    //todo not sure how to make this check better
-                    if (error.message === "Network Error") {
-                        error = { text : messages.error.serverUnavailable}
-                    }
-                    onError(error);
+                .then(response => onSuccess(response.data))
+                .catch(error => {
+                    let response = error.response;
+                    return onError((response && response.data && response.data.error) || error.message);
                 })
                 .then(onResponse);
         };
