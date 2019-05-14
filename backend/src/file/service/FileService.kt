@@ -43,21 +43,21 @@ class FileService(
     private fun file(fileId: FileId) = rootFile().walkTopDown()
         .find { id(it) == fileId }
         .also {
-            failIf(it == null, ErrorType.FileNotFound, mapOf(PayloadKey.FileId to fileId))
-            failIfNot(it!!.canRead(), ErrorType.FileNotReadable, mapOf(PayloadKey.FileName to it.name))
+            failIf(it == null, ErrorType.FileNotFound)
+            failIfNot(it!!.canRead(), ErrorType.FileNotReadable)
         }
 
     private fun rootFile() = File(config.defaultRootPath).also {
         check(it.exists()) { "root file is not exists. path = ${config.defaultRootPath}" }
 
-        failIfNot(it.canRead(), ErrorType.FileNotReadable, mapOf(PayloadKey.FileName to it.name))
+        failIfNot(it.canRead(), ErrorType.FileNotReadable)
     }
 
     private fun childrenFiles(parentFileId: FileId): Collection<File> {
         val parentFile = cachedFile(parentFileId)
 
-        failIf(parentFile == null, ErrorType.FileNotFound, mapOf(PayloadKey.ParentFileId to parentFileId))
-        failIfNot(mayHaveChildren(parentFile!!), ErrorType.FileCannotHaveChildren, mapOf(PayloadKey.FileName to parentFile.name))
+        failIf(parentFile == null, ErrorType.FileNotFound)
+        failIfNot(mayHaveChildren(parentFile!!), ErrorType.FileCannotHaveChildren)
 
         return cachedChildrenFiles(parentFile) ?: listOf()
     }

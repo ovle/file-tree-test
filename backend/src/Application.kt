@@ -5,6 +5,7 @@ import file.service.ArchiveService
 import file.service.FileService
 import file.service.FileTypeService
 import io.ktor.application.Application
+import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CORS
@@ -15,6 +16,7 @@ import io.ktor.jackson.jackson
 import io.ktor.response.respond
 import io.ktor.routing.get
 import io.ktor.routing.routing
+import io.ktor.util.pipeline.PipelineContext
 import net.lingala.zip4j.exception.ZipException
 import org.koin.core.parameter.parametersOf
 import org.koin.ktor.ext.Koin
@@ -88,22 +90,26 @@ private fun Application.routing() {
 private fun StatusPages.Configuration.statusPagesConfig() {
     val logger = LoggerFactory.getLogger(this::class.java)
 
+    suspend fun PipelineContext<Unit, ApplicationCall>.respondError(error: Any) {
+        call.respond(HttpStatusCode.InternalServerError, mapOf("error" to error))
+    }
+
     exception<FileTreeException> { cause ->
-        call.respond(mapOf("error" to cause.error))
+        respondError(cause.error)
     }
     exception<ExecutionException> { cause ->
-        val payload = when (cause.cause) {
+        val error = when (cause.cause) {
             is FileTreeException -> (cause.cause as FileTreeException).error
             is ZipException -> FileTreeErrorDto(ArchiveError)
             else -> FileTreeErrorDto(Other)
         }
-        call.respond(mapOf("error" to payload))
+        respondError(error)
     }
     exception<ZipException> { _ ->
-        call.respond(mapOf("error" to FileTreeErrorDto(ArchiveError)))
+        respondError(FileTreeErrorDto(ArchiveError))
     }
     exception<Throwable> { cause ->
         logger.error("error: ", cause)
-        call.respond(mapOf("error" to FileTreeErrorDto(Other)))
+        respondError(FileTreeErrorDto(Other))
     }
 }

@@ -11,11 +11,11 @@ fun <K, V> cache(expireSeconds: Long, loader: (K?) -> V) =
         .build(CacheLoader.from(loader))
 
 
-fun failIfNot(check: Boolean, errorType: FileTreeErrorDto.ErrorType, payload: Map<FileTreeErrorDto.PayloadKey, Any> = mapOf()) =
-    failIf(!check, errorType, payload)
+fun failIfNot(check: Boolean, errorType: FileTreeErrorDto.ErrorType) =
+    failIf(!check, errorType)
 
-fun failIf(check: Boolean, errorType: FileTreeErrorDto.ErrorType, payload: Map<FileTreeErrorDto.PayloadKey, Any> = mapOf()) {
-    if (check) throw FileTreeException(FileTreeErrorDto(errorType, payload))
+fun failIf(check: Boolean, errorType: FileTreeErrorDto.ErrorType) {
+    if (check) throw FileTreeException(FileTreeErrorDto(errorType))
 }
 
 class FileTreeException(val error: FileTreeErrorDto): Exception()
