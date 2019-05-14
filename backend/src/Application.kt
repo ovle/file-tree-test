@@ -90,12 +90,13 @@ private fun Application.routing() {
 private fun StatusPages.Configuration.statusPagesConfig() {
     val logger = LoggerFactory.getLogger(this::class.java)
 
-    suspend fun PipelineContext<Unit, ApplicationCall>.respondError(error: Any) {
+    suspend fun PipelineContext<Unit, ApplicationCall>.respondError(error: Any, cause: Throwable) {
+        logger.error("error: ", cause)
         call.respond(HttpStatusCode.InternalServerError, mapOf("error" to error))
     }
 
     exception<FileTreeException> { cause ->
-        respondError(cause.error)
+        respondError(cause.error, cause)
     }
     exception<ExecutionException> { cause ->
         val error = when (cause.cause) {
@@ -103,13 +104,12 @@ private fun StatusPages.Configuration.statusPagesConfig() {
             is ZipException -> FileTreeErrorDto(ArchiveError)
             else -> FileTreeErrorDto(Other)
         }
-        respondError(error)
+        respondError(error, cause)
     }
-    exception<ZipException> { _ ->
-        respondError(FileTreeErrorDto(ArchiveError))
+    exception<ZipException> { cause ->
+        respondError(FileTreeErrorDto(ArchiveError), cause)
     }
     exception<Throwable> { cause ->
-        logger.error("error: ", cause)
-        respondError(FileTreeErrorDto(Other))
+        respondError(FileTreeErrorDto(Other), cause)
     }
 }

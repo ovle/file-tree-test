@@ -9,7 +9,10 @@ import FileId
 import cache
 import failIf
 import failIfNot
+import failIfNotValid
+import id
 import org.slf4j.LoggerFactory
+import search
 import java.io.File
 
 
@@ -19,12 +22,12 @@ class FileService(
     private val config: AppConfig
 ) {
 
-    private val filesById = cache<FileId, File?>(config.fileCacheExpireTime) {
-            fileId -> file(fileId!!)
+    private val filesById = cache<FileId, File?>(config.fileCacheExpireTime) { fileId ->
+        file(fileId!!)
     }
 
-    private val childrenByParentId = cache<File, Collection<File>?>(config.fileCacheExpireTime) {
-            file -> childrenFiles(file!!)
+    private val childrenByParentId = cache<File, Collection<File>?>(config.fileCacheExpireTime) { file ->
+        childrenFiles(file!!)
     }
 
     /**
@@ -40,12 +43,7 @@ class FileService(
     fun children(parentFileId: FileId) = childrenFiles(parentFileId).map { it.toDto() }
 
 
-    private fun file(fileId: FileId) = rootFile().walkTopDown()
-        .find { id(it) == fileId }
-        .also {
-            failIf(it == null, ErrorType.FileNotFound)
-            failIfNot(it!!.canRead(), ErrorType.FileNotReadable)
-        }
+    private fun file(fileId: FileId) = (rootFile().search(fileId) ?: archiveService.file(fileId)).run { failIfNotValid(this) }
 
     private fun rootFile() = File(config.defaultRootPath).also {
         check(it.exists()) { "root file is not exists. path = ${config.defaultRootPath}" }
@@ -79,9 +77,7 @@ class FileService(
 
     private fun cachedChildrenFiles(parentFile: File) = childrenByParentId[parentFile]
 
-    private fun id(file: File) = file.hashCode()
-
-    private fun File.toDto() = FileDto(id(this), this.name, fileTypeService.type(this), mayHaveChildren(this))
+    private fun File.toDto() = FileDto(this.id(), this.name, fileTypeService.type(this), mayHaveChildren(this))
 
 
     companion object {

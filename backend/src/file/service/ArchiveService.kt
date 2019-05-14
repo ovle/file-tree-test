@@ -1,27 +1,35 @@
 package file.service
 
+import FileId
+import failIfNotValid
+import id
 import net.lingala.zip4j.core.NativeStorage
 import net.lingala.zip4j.core.ZipFile
-import net.lingala.zip4j.model.FileHeader
 import org.slf4j.LoggerFactory
+import search
 import java.io.File
 
 
 class ArchiveService {
 
-    //todo rewrite
-    fun unpack(parentFile: File): File {
-        val targetDir = createTempDir(prefix = parentFile.name, suffix = "")
-        val zip = ZipFile(NativeStorage(parentFile))
-        val fileHeaders = zip.fileHeaders.map { it as FileHeader }
-        for (fileHeader in fileHeaders) {
-            val targetFile = createTempFile(prefix = fileHeader.fileName, suffix = "", directory = targetDir)
+    private val tempFiles: MutableMap<FileId, File> = mutableMapOf()
 
-            zip.getInputStream(fileHeader).use {
-                targetFile.writeBytes(it.readBytes())
-            }
-        }
+    fun unpack(file: File): File {
+        val targetDir = tempFiles[file.id()] ?: unpackIntr(file)
+        return targetDir.run { failIfNotValid(this) }
+    }
 
+    fun file(fileId: FileId): File? {
+        tempFiles.values.forEach { it.search(fileId)?.let { file -> return file } }
+        return null
+    }
+
+    private fun unpackIntr(file: File): File {
+        val targetDir = createTempDir()
+        val zip = ZipFile(NativeStorage(file))
+        zip.extractAll(targetDir.absolutePath)
+
+        tempFiles[file.id()] = targetDir
         return targetDir
     }
 
