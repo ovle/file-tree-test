@@ -2,7 +2,7 @@
 
 import React, {Component} from "react";
 import {FileTreeNodeDto} from "../../model/file";
-import messages from "../../utils/messages";
+import {errorMessage} from "./errorMessage";
 
 /**
  * State-aware tree wrapper
@@ -31,7 +31,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
                     this.setState(() => ({root: root}))
                 },
                 (error) => {
-                    this.processError(error, null);
+                    this.setState(() => ({error: errorMessage(error, null)}))
                 }
             );
         };
@@ -62,7 +62,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
                     }), this.onSuccessLoading(onSuccess))
                 },
                 (error) => {
-                    this.processError(error, node);
+                    this.setState(() => ({error: errorMessage(error, node ? node.file : null)}))
                 },
                 () => {
                     this.setState((prevState) => {
@@ -74,33 +74,14 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             );
         };
 
-        //todo extract to separate component?
-        processError(error, node: FileTreeNodeDto) {
-            const errorMessage = error => {
-                //todo not sure how to make this check better
-                if (error === "Network Error") {
-                    error = messages.error.serverUnavailable;
-                }
-                if ((typeof error == "string") || !node) return error;
-
-                let errorText = messages.error[error.type] || error;
-                let fileInfo = `${messages.file} ${node.file.name}`;
-                return `${errorText}; ${fileInfo}`;
-            };
-
-            this.setState(() => ({error: errorMessage(error)}))
-        }
-
         onSuccessLoading = onSuccessLoading => {
             stateStorage && stateStorage.set(this.state);
 
             return onSuccessLoading;
         };
 
-        render = () => <div>
-            <WrappedComponent root={this.state.root} onNodeClick={this.onNodeClick} isLoading={this.isLoading}
-                              error={this.state.error}/>
-        </div>;
+
+        render = () => <WrappedComponent root={this.state.root} onNodeClick={this.onNodeClick} isLoading={this.isLoading} error={this.state.error}/>
     }
 
     return TreeStateWrapper;

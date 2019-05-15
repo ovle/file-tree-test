@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import FileTreeBranch from "./FileTreeBranch";
-import {Tree, TreeDiv, Header} from "../styles.js";
+import {Tree, TreeContent, TreeHeader} from "../styles.js";
 import {Error} from "../styles";
 
 
@@ -9,15 +9,16 @@ class FileTree extends Component {
     render = () => {
         let {root, onNodeClick, isLoading, error} = this.props;
         return (
-            <TreeDiv>
-                <Header style={{"width": "100%"}}>
+            <Tree style={{"overflow": "auto"}}>
+                {/*todo fix header*/}
+                <TreeHeader>
                     <div>File tree</div>
                     {error && <Error>{error}</Error>}
-                </Header>
-                <Tree>
+                </TreeHeader>
+                <TreeContent>
                     {root && <FileTreeBranch branchRoot={root} onNodeClick={onNodeClick} isLoading={isLoading}/>}
-                </Tree>
-            </TreeDiv>
+                </TreeContent>
+            </Tree>
         );
     };
 }

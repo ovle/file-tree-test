@@ -52,9 +52,7 @@ const withApi = (baseURL, WrappedComponent) => {
             return cancel;
         };
 
-        render = () => <div>
-            <WrappedComponent fetchRoot={this.fetchRoot} fetchChildren={this.fetchChildren}/>
-        </div>;
+        render = () => <WrappedComponent fetchRoot={this.fetchRoot} fetchChildren={this.fetchChildren}/>
     }
 
     return TreeApiWrapper;

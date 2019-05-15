@@ -23,18 +23,17 @@ let stateConfig = {
 };
 
 //todo fix performance on large number of files
-//todo fix tree layout/scrolling
 const WrappedTreeWithStorage = withApi(appConfig.defaultUrl, withState(stateConfig, FileTree));
-// const WrappedTree = withApi(appConfig.defaultUrl, withState({}, FileTree));
+const WrappedTree = withApi(appConfig.defaultUrl, withState({}, FileTree));
 
 const App = () => (
     <div className="App">
         <div style={{"height" : "400px"}}>
-            <WrappedTreeWithStorage/>
+            <WrappedTreeWithStorage />
         </div>
-        {/*<div style={{"height" : "400px"}}>*/}
-            {/*<WrappedTree/>*/}
-        {/*</div>*/}
+        <div style={{"height" : "400px"}}>
+            <WrappedTree style={{"height" : "400px"}}/>
+        </div>
     </div>
 );
 

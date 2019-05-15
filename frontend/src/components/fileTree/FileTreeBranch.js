@@ -2,7 +2,7 @@
 
 import React, {Component} from "react";
 import FileTreeNode from "./FileTreeNode";
-import {Branch, NodeButton, TreeDiv} from "../styles";
+import {Branch, NodeButton, NodeWrapper, TreeDiv} from "../styles";
 
 /**
  * Expandable tree branch
@@ -46,16 +46,15 @@ class FileTreeBranch extends Component {
         let children = branchRoot.children;
         let mayHaveChildren = branchRoot.file.mayHaveChildren;
         let loaderComponent = <NodeButton>{"[loading...]"}</NodeButton>;
-        let openerComponent = <NodeButton
-            onClick={() => this.onBranchNodeClick(branchRoot)}>{isOpened ? "[-]" : "[+]"}</NodeButton>;
+        let openerComponent = <NodeButton>{isOpened ? "[-]" : "[+]"}</NodeButton>;
 
         return (
             <Branch>
-                <div style={{"text-align": "left"}}>
+                <NodeWrapper onClick={() => this.onBranchNodeClick(branchRoot)}>
                     {/*todo fine controls */}
                     {isLoading(branchRoot) ? loaderComponent : mayHaveChildren && openerComponent}
                     <FileTreeNode file={branchRoot.file}/>
-                </div>
+                </NodeWrapper>
                 {isOpened &&
                 <TreeDiv>
                     {
