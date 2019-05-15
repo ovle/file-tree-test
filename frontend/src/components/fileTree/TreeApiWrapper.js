@@ -1,5 +1,4 @@
 import React, {Component} from "react";
-import {FileTreeNodeDto} from "../../model/file";
 import AxiosStatic, {Cancel} from "axios";
 import type {FileTreeErrorDto} from "../../model/error";
 
@@ -14,31 +13,31 @@ const withApi = (baseURL, WrappedComponent) => {
             super(props);
 
             let httpClientInstance = AxiosStatic.create({baseURL: baseURL});
-            this.state = {httpClientInstance: httpClientInstance};
+            this.state = {httpClientInstance: httpClientInstance, cancelTokens: {}};
         }
 
-        fetchRoot = (success: (root: any) => void, onError: (error: FileTreeErrorDto) => void, onResponse: () => void) => {
-            return this.fetchData(
-                `/files/root`, (root) => {
-                    success(new FileTreeNodeDto(root))
-                }, onError, onResponse
+        fetchRoot = (onSuccess: (root: any) => void, onError: (error: FileTreeErrorDto) => void, onResponse: () => void) => {
+            this.fetchData(
+                `/files/root`, onSuccess, onError, onResponse
             )
         };
 
         fetchChildren = (parentId: number, onSuccess: (children: any) => void, onError: (error: FileTreeErrorDto) => void, onResponse: () => void) => {
-            return this.fetchData(
-                `/files/${parentId}`, (children) => {
-                    onSuccess(children.map(file => new FileTreeNodeDto(file)))
-                }, onError, onResponse
-            )
+            let cancelToken = this.fetchData(
+                `/files/${parentId}`, onSuccess, onError, onResponse
+            );
+
+            this.state.cancelTokens[parentId] = cancelToken;
         };
 
         fetchData = (url: string, onSuccess: (data: any) => void, onError: (error: any) => void, onResponse: () => void) => {
             let CancelToken = AxiosStatic.CancelToken;
             let cancel;
-            let cancelTokenInstance = new CancelToken((c) => { cancel = c; });
+            let cancelTokenInstance = new CancelToken((c) => {
+                cancel = c;
+            });
 
-            this.state.httpClientInstance.get(url, { cancelToken:cancelTokenInstance })
+            this.state.httpClientInstance.get(url, {cancelToken: cancelTokenInstance})
                 .then(response => onSuccess(response.data))
                 .catch(error => {
                     if (error instanceof Cancel) return;
@@ -52,7 +51,24 @@ const withApi = (baseURL, WrappedComponent) => {
             return cancel;
         };
 
-        render = () => <WrappedComponent fetchRoot={this.fetchRoot} fetchChildren={this.fetchChildren}/>
+        cancelFetch = (fileId: number) => {
+            let cancelTokens = this.state.cancelTokens;
+            let cancelToken = cancelTokens[fileId];
+            if (!cancelToken) return false;
+
+            cancelTokens[fileId] = null;
+            cancelToken && cancelToken();
+            return true;
+        };
+
+        fetchApi = {
+            fetchRoot: this.fetchRoot,
+            fetchChildren: this.fetchChildren,
+            cancelFetch: this.cancelFetch
+        };
+
+
+        render = () => <WrappedComponent fetchApi={this.fetchApi}/>
     }
 
     return TreeApiWrapper;

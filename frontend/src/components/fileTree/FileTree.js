@@ -7,7 +7,8 @@ import {Error} from "../styles";
 class FileTree extends Component {
 
     render = () => {
-        let {root, onNodeClick, isLoading, error} = this.props;
+        let {stateApi, error} = this.props;
+        let treeRoot = stateApi.root();
         return (
             <Tree style={{"overflow": "auto"}}>
                 {/*todo fix header*/}
@@ -16,7 +17,7 @@ class FileTree extends Component {
                     {error && <Error>{error}</Error>}
                 </TreeHeader>
                 <TreeContent>
-                    {root && <FileTreeBranch branchRoot={root} onNodeClick={onNodeClick} isLoading={isLoading}/>}
+                    {treeRoot && <FileTreeBranch branchRoot={treeRoot} stateApi={stateApi}/>}
                 </TreeContent>
             </Tree>
         );

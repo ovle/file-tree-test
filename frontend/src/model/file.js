@@ -1,6 +1,7 @@
 // @flow
 
 type FileType = "Directory" | "Image" | "Archive" | "OpenableArchive" | "Other";
+type LoadingStatus = "NotLoaded" | "Loading" | "Loaded";
 
 export type FileDto = {
     id: number,
@@ -9,15 +10,12 @@ export type FileDto = {
     mayHaveChildren: boolean
 }
 
-export class FileTreeNodeDto {
-    file: FileDto;
-    children: Array<FileTreeNodeDto> = [];
-    isLoaded: boolean; //todo is client caching needed? how to evict ?
-    isOpened: boolean;
+export class NodeDto {
+    fileId: number;
+    loadingStatus: LoadingStatus = "NotLoaded"; //todo is client caching needed? how to evict ?
+    isOpened: boolean = false;
 
-    constructor(file: FileDto) {
-        this.file = file;
-        this.isLoaded = false;
-        this.isOpened = false;
+    constructor(fileId: number) {
+       this.fileId = fileId;
     }
 }

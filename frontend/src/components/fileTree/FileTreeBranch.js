@@ -9,58 +9,39 @@ import {Branch, NodeButton, NodeWrapper, TreeDiv} from "../styles";
  */
 class FileTreeBranch extends Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {isOpened: props.branchRoot.isOpened, isLoading: props.isLoading}; // todo duplicated part of state
-    }
-
-    //todo rewrite. should react to props change, not change state on callback
-    onSuccessLoading = () => {
-        this.setState((prevState) => {
-            return {isOpened: !prevState.isOpened}
-        }, () => {
-            let {branchRoot} = this.props;
-            branchRoot.isOpened = this.state.isOpened
-        });
-    };
-
-    onBranchNodeClick = (node) => {
-        if (!node.file.mayHaveChildren) return;
-
-        let {isOpened} = node;
-        if (isOpened || node.isLoaded) {
-            this.onSuccessLoading();
-        } else {
-            let {onNodeClick} = this.props;
-            this.cancelExpanding = onNodeClick(node, this.onSuccessLoading);
-        }
+    onNodeClick = () => {
+        let {branchRoot, stateApi} = this.props;
+        stateApi.onNodeClick(branchRoot);
     };
 
     componentWillUnmount(): void {
-        this.cancelExpanding && this.cancelExpanding();
+        let {branchRoot, stateApi} = this.props;
+        stateApi.onNodeUnmount(branchRoot);
     }
 
     render() {
-        let {branchRoot, onNodeClick, isLoading} = this.props;
-        let {isOpened} = this.state;
-        let children = branchRoot.children;
-        let mayHaveChildren = branchRoot.file.mayHaveChildren;
+        let {branchRoot, stateApi} = this.props;
+        let {isOpened, fileId: rootFileId} = branchRoot;
+        let isLoading = branchRoot.loadingStatus === "Loading";
+        let rootFile = stateApi.file(rootFileId);
+        let children = stateApi.children(rootFileId);
+        let mayHaveChildren = rootFile.mayHaveChildren;
+
         let loaderComponent = <NodeButton>{"[loading...]"}</NodeButton>;
         let openerComponent = <NodeButton>{isOpened ? "[-]" : "[+]"}</NodeButton>;
 
         return (
             <Branch>
-                <NodeWrapper onClick={() => this.onBranchNodeClick(branchRoot)}>
+                <NodeWrapper onClick={() => this.onNodeClick()}>
                     {/*todo fine controls */}
-                    {isLoading(branchRoot) ? loaderComponent : mayHaveChildren && openerComponent}
-                    <FileTreeNode file={branchRoot.file}/>
+                    {isLoading ? loaderComponent : mayHaveChildren && openerComponent}
+                    <FileTreeNode file={rootFile}/>
                 </NodeWrapper>
                 {isOpened &&
                 <TreeDiv>
                     {
-                        children.map((node) => (
-                                <FileTreeBranch key={node.file.id} branchRoot={node} onNodeClick={onNodeClick}
-                                                isLoading={isLoading}/>
+                        children.map((fileId) => (
+                                <FileTreeBranch key={fileId} branchRoot={stateApi.node(fileId)} stateApi={stateApi}/>
                             )
                         )
                     }

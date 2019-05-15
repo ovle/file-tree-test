@@ -16,7 +16,6 @@ class FileTreeNode extends Component {
                 <span>{name} </span>
                 {extension && <span>| {extension}</span>}
                 <span>| {file.type}</span>
-                {/*todo type image instead*/}
             </Node>
         );
     }
