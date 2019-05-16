@@ -67,11 +67,20 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
         onNodeUnmount = (node: NodeDto) => {
             let {fetchApi} = this.props;
             let isCancelled = fetchApi.cancelFetch(node.fileId);
-            //todo fix
-            if (isCancelled) {
-                node.isOpened = false;
-                node.loadingStatus = "NotLoaded";
+            if (!isCancelled) {
+                return;
             }
+
+            let fileId = node.fileId;
+            this.setState((prevState) => {
+                let prevNode = this.node(fileId);
+                return {
+                    nodes: {
+                        ...prevState.nodes,
+                        [fileId]: {...prevNode, loadingStatus: "NotLoaded", isOpened: false}
+                    }
+                };
+            });
         };
 
         onNodeClick = (node: NodeDto) => {
@@ -135,7 +144,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
                     let id = file.id;
 
                     files[id] = file;
-                    nodes[id] = new NodeDto(id);
+                    nodes[id] = this.node(id) ||  new NodeDto(id);
                     childrenIds[parentId].push(id);
                 }
             );

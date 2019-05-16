@@ -23,11 +23,19 @@ const withApi = (baseURL, WrappedComponent) => {
         };
 
         fetchChildren = (parentId: number, onSuccess: (children: any) => void, onError: (error: FileTreeErrorDto) => void, onResponse: () => void) => {
+            let cancelTokens = this.state.cancelTokens;
+
             let cancelToken = this.fetchData(
-                `/files/${parentId}`, onSuccess, onError, onResponse
+                `/files/${parentId}`,
+                onSuccess,
+                onError,
+                () => {
+                    delete cancelTokens[parentId];
+                    onResponse();
+                }
             );
 
-            this.state.cancelTokens[parentId] = cancelToken;
+            cancelTokens[parentId] = cancelToken;
         };
 
         fetchData = (url: string, onSuccess: (data: any) => void, onError: (error: any) => void, onResponse: () => void) => {
@@ -36,16 +44,24 @@ const withApi = (baseURL, WrappedComponent) => {
             let cancelTokenInstance = new CancelToken((c) => {
                 cancel = c;
             });
+            let cancelled = false;  //todo save promise and resolve on cancel instead?
 
             this.state.httpClientInstance.get(url, {cancelToken: cancelTokenInstance})
                 .then(response => onSuccess(response.data))
                 .catch(error => {
-                    if (error instanceof Cancel) return;
+                    if (error instanceof Cancel) {
+                        cancelled = true;
+                        return;
+                    }
 
                     let response = error.response;
-                    return onError((response && response.data && response.data.error) || error.message);
+                    onError((response && response.data && response.data.error) || error.message);
                 })
-                .then(onResponse);
+                .then(() => {
+                    if (!cancelled) {
+                        onResponse && onResponse();
+                    }
+                });
 
             // noinspection JSUnusedAssignment
             return cancel;
@@ -56,7 +72,7 @@ const withApi = (baseURL, WrappedComponent) => {
             let cancelToken = cancelTokens[fileId];
             if (!cancelToken) return false;
 
-            cancelTokens[fileId] = null;
+            delete cancelTokens[fileId];
             cancelToken && cancelToken();
             return true;
         };
