@@ -1,7 +1,7 @@
 // @flow
 
 type FileType = "Directory" | "Image" | "Archive" | "OpenableArchive" | "Other";
-type LoadingStatus = "NotLoaded" | "Loading" | "Loaded";
+type LoadingStatus = "NotLoaded" | "Loading" | "Loaded" | "LoadingError";
 
 export type FileDto = {
     id: number,

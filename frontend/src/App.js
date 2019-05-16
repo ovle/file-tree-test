@@ -12,14 +12,12 @@ const STATE_STORAGE_KEY = "STATE_STORAGE_KEY";
 const localStorage = {
    get: () => ls.get(STATE_STORAGE_KEY),
    set: (state) => { ls.set(STATE_STORAGE_KEY, state) },
-   clear: () => { ls.clear(); }
+   reset: () => { ls.clear(); }
 };
 
-//todo separate 'opened' state part from 'files info' state part
-// to restore tree structure without storage?
 let stateConfig = {
-    stateStorage: localStorage,
-    updateOnExpand: false
+    stateStorage: null,
+    updateOnExpand: false   //todo no full support
 };
 
 //todo fix performance on large number of files
@@ -28,12 +26,12 @@ const WrappedTree = withApi(appConfig.defaultUrl, withState({}, FileTree));
 
 const App = () => (
     <div className="App">
-        {/*<div style={{"height" : "400px"}}>*/}
-            {/*<WrappedTreeWithStorage />*/}
-        {/*</div>*/}
-        <div style={{"height" : "800px"}}>
-            <WrappedTree/>
+        <div style={{"height" : "400px"}}>
+            <WrappedTreeWithStorage />
         </div>
+        {/*<div style={{"height" : "400px"}}>*/}
+            {/*<WrappedTree/>*/}
+        {/*</div>*/}
     </div>
 );
 

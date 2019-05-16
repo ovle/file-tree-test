@@ -19,29 +19,36 @@ class FileTreeBranch extends Component {
         stateApi.onNodeUnmount(branchRoot);
     }
 
+    static nodeButton({isOpened, loadingStatus}, {type, mayHaveChildren}) {
+        let isLoading = loadingStatus === "Loading";
+        let loaderComponent = <>{"[...]"}</>;
+        let openerComponent = <>{isOpened ? "[-]" : "[+]"}</>;
+        return <NodeButton>{isLoading ? loaderComponent : mayHaveChildren && openerComponent}</NodeButton>;
+    }
+
     render() {
-        let {branchRoot, stateApi} = this.props;
+        let {branchRoot, stateApi, level} = this.props;
         let {isOpened, fileId: rootFileId} = branchRoot;
-        let isLoading = branchRoot.loadingStatus === "Loading";
         let rootFile = stateApi.file(rootFileId);
         let children = stateApi.children(rootFileId);
-        let mayHaveChildren = rootFile.mayHaveChildren;
-
-        let loaderComponent = <NodeButton>{"[loading...]"}</NodeButton>;
-        let openerComponent = <NodeButton>{isOpened ? "[-]" : "[+]"}</NodeButton>;
+        let nodeButton = FileTreeBranch.nodeButton(branchRoot, rootFile);
+        let leftPaddingPerLevel = 50;
 
         return (
             <Branch>
                 <NodeWrapper onClick={() => this.onNodeClick()}>
-                    {/*todo fine controls */}
-                    {isLoading ? loaderComponent : mayHaveChildren && openerComponent}
-                    <FileTreeNode file={rootFile}/>
+                    <TreeDiv style={{"paddingLeft": `${leftPaddingPerLevel * level}px`}}>
+                        {nodeButton}
+                        <FileTreeNode file={rootFile}/>
+                    </TreeDiv>
                 </NodeWrapper>
                 {isOpened &&
                 <TreeDiv>
                     {
-                        children.map((fileId) => (
-                                <FileTreeBranch key={fileId} branchRoot={stateApi.node(fileId)} stateApi={stateApi}/>
+                        children.map(
+                            (fileId) => (
+                                <FileTreeBranch key={fileId} branchRoot={stateApi.node(fileId)} stateApi={stateApi}
+                                                level={level + 1}/>
                             )
                         )
                     }

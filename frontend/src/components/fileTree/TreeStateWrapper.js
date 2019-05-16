@@ -1,7 +1,7 @@
 // @flow
 
 import React, {Component} from "react";
-import {errorMessage} from "./errorMessage";
+import {processError} from "./processError";
 import {NodeDto} from "../../model/file";
 
 /**
@@ -11,23 +11,32 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
 
     class TreeStateWrapper extends Component {
 
-        constructor(props) {
-            super(props);
-
-            let defaultState = {
+        static defaultState() {
+            return {
                 root: null,         //root node
                 files: {},          //file by fileId
                 nodes: {},          //node by fileId
                 childrenIds: {},    //fileIds by parent fileId
                 error: null
             };
-            this.state = stateStorage ? (stateStorage.get() || defaultState) : defaultState;
+        }
 
+
+        constructor(props) {
+            super(props);
+
+            let defaultState = TreeStateWrapper.defaultState();
+            this.state = stateStorage ? (stateStorage.get() || defaultState) : defaultState;
         }
 
         componentDidMount = () => {
             if (this.state.root) return;
 
+            this.loadRoot();
+        };
+
+
+        loadRoot() {
             let {fetchApi} = this.props;
             fetchApi.fetchRoot(
                 (root) => {
@@ -39,10 +48,10 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
                     }))
                 },
                 (error) => {
-                    this.setState(() => ({error: errorMessage(error, null)}))
+                    this.setState(() => (processError(error, null)))
                 }
             );
-        };
+        }
 
         file = (fileId) => {
             let {files} = this.state;
@@ -105,7 +114,8 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
         };
 
         loadData = (node: NodeDto) => {
-            if (!node.isOpened || node.loadingStatus === "Loaded") {
+            let reloadOpenedNode = (!updateOnExpand && node.loadingStatus === "Loaded");
+            if (!node.isOpened || reloadOpenedNode) {
                 return null;
             }
 
@@ -117,7 +127,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
                     this.setState((prevState) => this.newState(prevState, fileId, children), this.onSuccessLoading)
                 },
                 (error) => {
-                    this.setState(() => ({error: errorMessage(error, node ? this.file(fileId) : null)}))
+                    this.setState((prevState) => processError(prevState, error, this.node(fileId), this.file(fileId)))
                 },
                 () => {
                     this.setState((prevState) => {
@@ -152,6 +162,15 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             return {files: files, nodes: nodes, childrenIds: childrenIds, error: null};
         };
 
+        //todo preserve structure ?
+        resetState = () => {
+            stateStorage && stateStorage.reset();
+
+            this.setState(TreeStateWrapper.defaultState());
+            this.loadRoot();
+        };
+
+
         stateApi = {
             root: () => {
                 let root = this.state.root;
@@ -162,7 +181,8 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             children: this.children,
             onSuccessLoading: this.onSuccessLoading,
             onNodeClick: this.onNodeClick,
-            onNodeUnmount: this.onNodeUnmount
+            onNodeUnmount: this.onNodeUnmount,
+            reset: this.resetState
         };
 
 

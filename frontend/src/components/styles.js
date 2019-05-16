@@ -6,25 +6,32 @@ const TreeDiv = styled.div`
 `;
 
 const Tree = styled(TreeDiv)`
-  overflow: auto;
   background: #2B2B2B;
-  border: 2px double #A9B7C6;
+  border: 1px solid #808080;
+`;
+
+const TreeTitle = styled.span`
+  vertical-align: middle;
 `;
 
 const TreeHeader = styled.div`
   color: #9876AA;
+  height: 10%;
   width: 100%;
-  position: fixed;
+  position: relative;
 `;
 
 const TreeContent = styled(TreeDiv)`
   cursor: pointer; 
   user-select: none;
+  position: relative;
+  overflow-y: auto;  
+  border: 1px solid #808080;
+  height: 90%;
 `;
 
 const Branch = styled.div`
   margin-top: 5px;
-  padding-left: 4em;
 `;
 
 const NodeWrapper = styled.div`
@@ -36,19 +43,12 @@ const NodeWrapper = styled.div`
 
 const Node = styled.span`
   color: #619647;
-  textAlign: left;
   margin-left: 5px;
   padding: 2px;
 `;
 
 const NodeButton = styled.span`
-  textAlign: left;
   color: #9876AA;
-`;
-
-const Warning = styled.div`
-  background: yellow;
-  color: darkgray;
 `;
 
 const Error = styled.div`
@@ -56,6 +56,17 @@ const Error = styled.div`
   color: white;
 `;
 
+const Button = styled.div`
+  user-select: none;
+  background: #2B2B2B;
+  border: 1px solid #808080;
+  color: A9B7C6;
+  &:hover {
+    background-color: #214283;
+  }
+  padding: 5px;
+`;
+
 export {
-    Tree, TreeContent, TreeDiv, TreeHeader, Branch, Node, NodeWrapper, NodeButton, Warning, Error
+    Tree, TreeContent, TreeDiv, TreeHeader, TreeTitle, Branch, Node, NodeWrapper, NodeButton, Error, Button
 }
