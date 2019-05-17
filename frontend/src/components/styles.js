@@ -16,10 +16,12 @@ const TreeTitle = styled.span`
 
 const TreeHeader = styled.div`
   color: #9876AA;
-  height: 10%;
+  height: 5%;
   width: 100%;
   position: relative;
 `;
+
+const TreeFooter = styled.div``;
 
 const TreeContent = styled(TreeDiv)`
   cursor: pointer; 
@@ -52,8 +54,7 @@ const NodeButton = styled.span`
 `;
 
 const Error = styled.div`
-  background: #D25252;
-  color: white;
+  color: #D25252;
 `;
 
 const Button = styled.div`
@@ -68,5 +69,5 @@ const Button = styled.div`
 `;
 
 export {
-    Tree, TreeContent, TreeDiv, TreeHeader, TreeTitle, Branch, Node, NodeWrapper, NodeButton, Error, Button
+    Tree, TreeContent, TreeDiv, TreeHeader, TreeFooter, TreeTitle, Branch, Node, NodeWrapper, NodeButton, Error, Button
 }

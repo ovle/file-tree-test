@@ -5,6 +5,7 @@ data class FileTreeErrorDto(val type: ErrorType) {
         FileNotReadable,
         FileCannotHaveChildren,
         ArchiveError,
+        ArchiveTypeNotSupported,
         Other
     }
 }

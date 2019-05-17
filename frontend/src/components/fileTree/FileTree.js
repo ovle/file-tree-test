@@ -1,8 +1,8 @@
 import React, {Component} from "react";
 import FileTreeBranch from "./FileTreeBranch";
-import {Tree, TreeContent, TreeHeader, TreeTitle, Button} from "../styles.js";
-import {Error} from "../styles";
+import {Tree, TreeContent, TreeHeader, TreeFooter, TreeTitle, Button} from "../styles.js";
 import messages from "../../utils/messages";
+import {Error} from "../styles";
 
 
 class FileTree extends Component {
@@ -19,11 +19,13 @@ class FileTree extends Component {
                 <TreeHeader>
                     <TreeTitle>{messages.title}</TreeTitle>
                     {resetButton}
-                    {error && <Error>{error}</Error>}
                 </TreeHeader>
                 <TreeContent>
                     {treeRoot && <FileTreeBranch branchRoot={treeRoot} stateApi={stateApi} level={0}/>}
                 </TreeContent>
+                <TreeFooter>
+                    {error && <Error>{error}</Error>}
+                </TreeFooter>
             </Tree>
         );
     };

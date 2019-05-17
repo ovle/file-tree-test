@@ -4,7 +4,6 @@ data class FileDto(val id: FileId, val name: String, val type: FileType, val may
         Directory,
         Image,
         Archive,
-        OpenableArchive,
         Other
     }
 }

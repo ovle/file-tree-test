@@ -21,9 +21,11 @@ class FileTreeBranch extends Component {
 
     static nodeButton({isOpened, loadingStatus}, {type, mayHaveChildren}) {
         let isLoading = loadingStatus === "Loading";
-        let loaderComponent = <>{"[...]"}</>;
-        let openerComponent = <>{isOpened ? "[-]" : "[+]"}</>;
-        return <NodeButton>{isLoading ? loaderComponent : mayHaveChildren && openerComponent}</NodeButton>;
+        let isError = loadingStatus === "LoadingError";
+        let text = isLoading ? "..." : isError ? "X" : isOpened ? "-" : "+";
+        let nodeComponent = mayHaveChildren ? `[${text}]` : "";
+
+        return <NodeButton>{nodeComponent}</NodeButton>;
     }
 
     render() {

@@ -1,6 +1,6 @@
 // @flow
 
-type FileType = "Directory" | "Image" | "Archive" | "OpenableArchive" | "Other";
+type FileType = "Directory" | "Image" | "Archive" | "Other";
 type LoadingStatus = "NotLoaded" | "Loading" | "Loaded" | "LoadingError";
 
 export type FileDto = {
@@ -12,7 +12,7 @@ export type FileDto = {
 
 export class NodeDto {
     fileId: number;
-    loadingStatus: LoadingStatus = "NotLoaded"; //todo is client caching needed? how to evict ?
+    loadingStatus: LoadingStatus = "NotLoaded";
     isOpened: boolean = false;
 
     constructor(fileId: number) {

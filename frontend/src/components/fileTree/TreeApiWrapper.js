@@ -31,7 +31,7 @@ const withApi = (baseURL, WrappedComponent) => {
                 onError,
                 () => {
                     delete cancelTokens[parentId];
-                    onResponse();
+                    onResponse && onResponse();
                 }
             );
 

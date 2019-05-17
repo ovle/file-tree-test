@@ -27,7 +27,11 @@ fun failIfNot(check: Boolean, errorType: FileTreeErrorDto.ErrorType) =
     failIf(!check, errorType)
 
 fun failIf(check: Boolean, errorType: FileTreeErrorDto.ErrorType) {
-    if (check) throw FileTreeException(FileTreeErrorDto(errorType))
+    if (check) fail(errorType)
+}
+
+fun fail(errorType: FileTreeErrorDto.ErrorType) {
+    throw FileTreeException(FileTreeErrorDto(errorType))
 }
 
 class FileTreeException(val error: FileTreeErrorDto): Exception()

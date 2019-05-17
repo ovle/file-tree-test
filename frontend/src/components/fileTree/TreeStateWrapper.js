@@ -21,7 +21,6 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             };
         }
 
-
         constructor(props) {
             super(props);
 
@@ -33,44 +32,6 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             if (this.state.root) return;
 
             this.loadRoot();
-        };
-
-
-        loadRoot() {
-            let {fetchApi} = this.props;
-            fetchApi.fetchRoot(
-                (root) => {
-                    let id = root.id;
-                    this.setState(() => ({
-                        root: root,
-                        files: {[id]: root},
-                        nodes: {[id]: new NodeDto(id)}
-                    }))
-                },
-                (error) => {
-                    this.setState(() => (processError(error, null)))
-                }
-            );
-        }
-
-        file = (fileId) => {
-            let {files} = this.state;
-            return files[fileId];
-        };
-
-        node = (fileId) => {
-            let {nodes} = this.state;
-            return nodes[fileId];
-        };
-
-        children = (fileId) => {
-            let {childrenIds} = this.state;
-            return childrenIds[fileId] || [];
-        };
-
-        onSuccessLoading = onSuccessLoading => {
-            stateStorage && stateStorage.set(this.state);
-            return onSuccessLoading;
         };
 
         onNodeUnmount = (node: NodeDto) => {
@@ -102,7 +63,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             this.setState((prevState) => {
                 let prevNode = this.node(fileId);
                 let wasOpened = prevNode.isOpened;
-                let loadingStatus = prevNode.loadingStatus === "NotLoaded" ? "Loading" : prevNode.loadingStatus;
+                let loadingStatus = (prevNode.loadingStatus === "Loaded") ? prevNode.loadingStatus : "Loading";
 
                 return {
                     nodes: {
@@ -112,6 +73,24 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
                 };
             }, () => this.loadData(this.node(fileId)));
         };
+
+
+        loadRoot() {
+            let {fetchApi} = this.props;
+            fetchApi.fetchRoot(
+                (root) => {
+                    let id = root.id;
+                    this.setState(() => ({
+                        root: root,
+                        files: {[id]: root},
+                        nodes: {[id]: new NodeDto(id)}
+                    }))
+                },
+                (error) => {
+                    this.setState(() => (processError(error, null)))
+                }
+            );
+        }
 
         loadData = (node: NodeDto) => {
             let reloadOpenedNode = (!updateOnExpand && node.loadingStatus === "Loaded");
@@ -123,25 +102,26 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             let {fetchApi} = this.props;
             return fetchApi.fetchChildren(
                 fileId,
-                (children) => {
-                    this.setState((prevState) => this.newState(prevState, fileId, children), this.onSuccessLoading)
-                },
-                (error) => {
-                    this.setState((prevState) => processError(prevState, error, this.node(fileId), this.file(fileId)))
-                },
-                () => {
-                    this.setState((prevState) => {
-                        let prevNode = this.node(fileId);
-                        return {
-                            nodes: {
-                                ...prevState.nodes,
-                                [fileId]: {...prevNode, loadingStatus: "Loaded"}
-                            }
-                        };
-                    });
-                }
+                (children) => this.setState((prevState) => this.newState(prevState, fileId, children)),
+                (error) => this.setState((prevState) => processError(prevState, error, this.node(fileId), this.file(fileId)), this.resetErrorMessage),
+                () => this.onLoadingFinished(fileId)
             );
         };
+
+        onLoadingFinished(fileId) {
+            this.setState((prevState) => {
+                let prevNode = this.node(fileId);
+                let loadingStatus = prevNode.loadingStatus === "Loading" ? "Loaded" : prevNode.loadingStatus;
+
+                return {
+                    nodes: {
+                        ...prevState.nodes,
+                        [fileId]: {...prevNode, loadingStatus: loadingStatus}
+                    }
+                };
+            }, this.saveState);
+        };
+
 
         newState = (prevState, parentId, children) => {
             let files = {...prevState.files};
@@ -154,7 +134,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
                     let id = file.id;
 
                     files[id] = file;
-                    nodes[id] = this.node(id) ||  new NodeDto(id);
+                    nodes[id] = this.node(id) || new NodeDto(id);
                     childrenIds[parentId].push(id);
                 }
             );
@@ -170,6 +150,16 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             this.loadRoot();
         };
 
+        saveState = () => stateStorage && stateStorage.set({...this.state, error: null});
+
+        resetErrorMessage = () => setTimeout(() => this.setState({error: null}), 3000);
+
+        file = (fileId) => this.state.files[fileId];
+
+        node = (fileId) => this.state.nodes[fileId];
+
+        children = (fileId) => this.state.childrenIds[fileId] || [];
+
 
         stateApi = {
             root: () => {
@@ -179,7 +169,6 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             file: this.file,
             node: this.node,
             children: this.children,
-            onSuccessLoading: this.onSuccessLoading,
             onNodeClick: this.onNodeClick,
             onNodeUnmount: this.onNodeUnmount,
             reset: this.resetState

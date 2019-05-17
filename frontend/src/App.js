@@ -26,7 +26,7 @@ const WrappedTree = withApi(appConfig.defaultUrl, withState({}, FileTree));
 
 const App = () => (
     <div className="App">
-        <div style={{"height" : "400px"}}>
+        <div style={{"height" : "800px"}}>
             <WrappedTreeWithStorage />
         </div>
         {/*<div style={{"height" : "400px"}}>*/}

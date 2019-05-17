@@ -20,7 +20,13 @@ export const processError = (prevState, error, node: NodeDto, file: FileDto) => 
     }
     if ((typeof error == "string") || !node) return error;
 
+    let nodes = { ...prevState.nodes };
+    if (node) {
+        nodes[node.fileId] = { ...node, loadingStatus: "LoadingError", isOpened: false }
+    }
+
     return {
+        nodes: nodes,
         error: errorInfo(error, file)
     };
 };

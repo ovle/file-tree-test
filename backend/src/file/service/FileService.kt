@@ -3,8 +3,7 @@ package file.service
 import AppConfig
 import FileTreeErrorDto.*
 import FileDto
-import FileDto.FileType.Directory
-import FileDto.FileType.OpenableArchive
+import FileDto.FileType.*
 import FileId
 import cache
 import failIf
@@ -64,7 +63,7 @@ class FileService(
         val parentType = fileTypeService.type(parentFile)
         return when (parentType) {
             Directory -> parentFile
-            OpenableArchive -> archiveService.unpack(parentFile)
+            Archive -> archiveService.unpack(parentFile)
             else -> throw IllegalArgumentException("get children not supported for type $parentType")
         }.listFiles().toList()
     }
@@ -82,6 +81,6 @@ class FileService(
 
     companion object {
         private val logger = LoggerFactory.getLogger(FileService::class.java)
-        private val FILE_TYPES_WITH_CHILDREN = setOf(Directory, OpenableArchive)
+        private val FILE_TYPES_WITH_CHILDREN = setOf(Directory, Archive)
     }
 }
