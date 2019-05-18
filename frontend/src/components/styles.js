@@ -4,9 +4,10 @@ import styled from 'styled-components'
 const backgroundColor = `#2B2B2B`;
 const textColor = `#7E7E7E`;
 const borderColor = `#808080`;
-const selectionBackgroundColor = `#7E7E7E`;
-const selectionTextColor = `#2B2B2B`;
+const selectionBackgroundColor = `#214283`;
+const selectionTextColor = `#7E7E7E`;
 const errorTextColor = `#D25252`;
+const openableNodeTextColor = `#CB772F`;
 
 const buttonTextColor = `#808080`;
 const buttonBackgroundColor = `#2B2B2B`;
@@ -65,6 +66,10 @@ const ErrorNode = styled(Node)`
   color: ${errorTextColor};
 `;
 
+const OpenableNode = styled(Node)`
+  color: ${openableNodeTextColor};
+`;
+
 const Button = styled.div`
   user-select: none;
   background: ${buttonBackgroundColor};
@@ -78,5 +83,5 @@ const Button = styled.div`
 `;
 
 export {
-    Tree, TreeContent, TreeDiv, TreeHeader, TreeFooter, TreeTitle, Branch, Node, NodeWrapper, ErrorNode, Button
+    Tree, TreeContent, TreeDiv, TreeHeader, TreeFooter, TreeTitle, Branch, Node, NodeWrapper, ErrorNode, OpenableNode, Button
 }
