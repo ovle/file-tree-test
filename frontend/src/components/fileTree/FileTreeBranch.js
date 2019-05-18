@@ -1,8 +1,6 @@
-// @flow
-
 import React, {Component} from "react";
 import FileTreeNode from "./FileTreeNode";
-import {Branch, NodeButton, NodeWrapper, TreeDiv} from "../styles";
+import {Branch, NodeWrapper, TreeDiv} from "../styles";
 
 /**
  * Expandable tree branch
@@ -19,29 +17,18 @@ class FileTreeBranch extends Component {
         stateApi.onNodeUnmount(branchRoot);
     }
 
-    static nodeButton({isOpened, loadingStatus}, {type, mayHaveChildren}) {
-        let isLoading = loadingStatus === "Loading";
-        let isError = loadingStatus === "LoadingError";
-        let text = isLoading ? "..." : isError ? "X" : isOpened ? "-" : "+";
-        let nodeComponent = mayHaveChildren ? `[${text}]` : "";
-
-        return <NodeButton>{nodeComponent}</NodeButton>;
-    }
-
     render() {
         let {branchRoot, stateApi, level} = this.props;
         let {isOpened, fileId: rootFileId} = branchRoot;
         let rootFile = stateApi.file(rootFileId);
         let children = stateApi.children(rootFileId);
-        let nodeButton = FileTreeBranch.nodeButton(branchRoot, rootFile);
-        let leftPaddingPerLevel = 50;
+        let leftPaddingPerLevel = 60;
 
         return (
             <Branch>
                 <NodeWrapper onClick={() => this.onNodeClick()}>
                     <TreeDiv style={{"paddingLeft": `${leftPaddingPerLevel * level}px`}}>
-                        {nodeButton}
-                        <FileTreeNode file={rootFile}/>
+                        <FileTreeNode file={rootFile} node={branchRoot}/>
                     </TreeDiv>
                 </NodeWrapper>
                 {isOpened &&

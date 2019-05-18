@@ -1,7 +1,5 @@
-// @flow
-
 import React, {Component} from "react";
-import {NodeDto} from "../../model/file";
+import {NodeDto} from "../../../model/file";
 
 /**
  * State-aware tree wrapper

@@ -1,18 +1,43 @@
 import React, {Component} from "react";
-import {Node} from "../styles.js";
+import {Node, ErrorNode} from "../styles.js";
 
-//todo icon
+
+const typeIconConfig = {
+    Directory: "folder",
+    Image: "portrait",
+    Archive: "lock",
+    Other: "insert_drive_file",
+};
+
+const openedTypeIconConfig = {
+    Directory: "folder_open",
+    Archive: "lock_open"
+};
+
+
 class FileTreeNode extends Component {
 
     render() {
-        let {file} = this.props;
+        let {file, node} = this.props;
+        let {type} = file;
+        let {isOpened, loadingStatus} = node;
+        let isLoading = loadingStatus === "Loading";
+        let isError = loadingStatus === "LoadingError";
+        let iconName = isLoading ? "access_time" :
+            (isOpened && this.openedTypeIcon(type)) || this.typeIcon(type);
+        let NodeComponent = isError ? ErrorNode : Node;
+
         return (
-            <Node>
+            <NodeComponent>
+                <i className="material-icons" style={{"verticalAlign":"middle"}}>{iconName}</i>
                 <span>{file.name} </span>
-                <span>| {file.type}</span>
-            </Node>
+            </NodeComponent>
         );
     }
+
+    typeIcon = (type) => typeIconConfig[type];
+
+    openedTypeIcon = (type) => openedTypeIconConfig[type];
 }
 
 export default FileTreeNode;

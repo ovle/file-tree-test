@@ -1,9 +1,9 @@
 import React from 'react';
 import './App.css';
 import appConfig from "./appConfig";
-import withApi from "./components/fileTree/ApiWrapper";
-import withState from "./components/fileTree/StateWrapper";
-import withErrorProcessing from "./components/fileTree/ErrorProcessingWrapper";
+import withApi from "./components/fileTree/wrappers/ApiWrapper";
+import withState from "./components/fileTree/wrappers/StateWrapper";
+import withErrorProcessing from "./components/fileTree/wrappers/ErrorProcessingWrapper";
 import FileTree from "./components/fileTree/FileTree";
 import ls from "local-storage";
 import i18n from './i18n';
@@ -23,7 +23,7 @@ const localStorage = {
 };
 
 let stateConfig = {
-    stateStorage: null,
+    stateStorage: localStorage,
     updateOnExpand: false   //todo no full support
 };
 

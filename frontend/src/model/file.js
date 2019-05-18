@@ -1,5 +1,3 @@
-// @flow
-
 type FileType = "Directory" | "Image" | "Archive" | "Other";
 type LoadingStatus = "NotLoaded" | "Loading" | "Loaded" | "LoadingError";
 

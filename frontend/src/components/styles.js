@@ -1,13 +1,27 @@
 import styled from 'styled-components'
 
 
+const backgroundColor = `#2B2B2B`;
+const textColor = `#7E7E7E`;
+const borderColor = `#808080`;
+const selectionBackgroundColor = `#7E7E7E`;
+const selectionTextColor = `#2B2B2B`;
+const errorTextColor = `#D25252`;
+
+const buttonTextColor = `#808080`;
+const buttonBackgroundColor = `#2B2B2B`;
+const buttonSelectionTextColor = `#ebd7ff`;
+const buttonSelectionBackgroundColor = `#7E7E7E`;
+const buttonBorderColor = `#808080`;
+
+
 const TreeDiv = styled.div`
   height: 100%;
 `;
 
 const Tree = styled(TreeDiv)`
-  background: #2B2B2B;
-  border: 1px solid #808080;
+  background: ${backgroundColor};
+  border: 1px solid ${borderColor};
 `;
 
 const TreeTitle = styled.span`
@@ -15,7 +29,7 @@ const TreeTitle = styled.span`
 `;
 
 const TreeHeader = styled.div`
-  color: #9876AA;
+  color: ${textColor};
   height: 5%;
   width: 100%;
   position: relative;
@@ -28,7 +42,7 @@ const TreeContent = styled(TreeDiv)`
   user-select: none;
   position: relative;
   overflow-y: auto;  
-  border: 1px solid #808080;
+  border: 1px solid ${borderColor};
   height: 90%;
 `;
 
@@ -37,37 +51,32 @@ const Branch = styled.div`
 `;
 
 const NodeWrapper = styled.div`
+  color: ${textColor};
   text-align: left;
     &:hover {
-    background-color: #214283;
+    background-color: ${selectionBackgroundColor};
+    color: ${selectionTextColor};
   }  
 `;
 
-const Node = styled.span`
-  color: #619647;
-  margin-left: 5px;
-  padding: 2px;
-`;
+const Node = styled.span``;
 
-const NodeButton = styled.span`
-  color: #9876AA;
-`;
-
-const Error = styled.div`
-  color: #D25252;
+const ErrorNode = styled(Node)`
+  color: ${errorTextColor};
 `;
 
 const Button = styled.div`
   user-select: none;
-  background: #2B2B2B;
-  border: 1px solid #808080;
-  color: A9B7C6;
+  background: ${buttonBackgroundColor};
+  border: 1px solid ${buttonBorderColor};
+  color: ${buttonTextColor};
   &:hover {
-    background-color: #214283;
+    background-color: ${buttonSelectionBackgroundColor};
+    color: ${buttonSelectionTextColor};
   }
   padding: 5px;
 `;
 
 export {
-    Tree, TreeContent, TreeDiv, TreeHeader, TreeFooter, TreeTitle, Branch, Node, NodeWrapper, NodeButton, Error, Button
+    Tree, TreeContent, TreeDiv, TreeHeader, TreeFooter, TreeTitle, Branch, Node, NodeWrapper, ErrorNode, Button
 }

@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import FileTreeBranch from "./FileTreeBranch";
 import {Tree, TreeContent, TreeHeader, TreeFooter, TreeTitle, Button} from "../styles.js";
-import {Error} from "../styles";
+import {ErrorNode} from "../styles";
 import {withNamespaces} from "react-i18next";
 
 
@@ -24,7 +24,7 @@ class FileTree extends Component {
                     {treeRoot && <FileTreeBranch branchRoot={treeRoot} stateApi={stateApi} level={0}/>}
                 </TreeContent>
                 <TreeFooter>
-                    {error && <Error>{error}</Error>}
+                    {error && <ErrorNode>{error}</ErrorNode>}
                 </TreeFooter>
             </Tree>
         );

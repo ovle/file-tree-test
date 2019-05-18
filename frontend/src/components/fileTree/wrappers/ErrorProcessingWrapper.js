@@ -1,7 +1,7 @@
-import {NodeDto} from "../../model/file";
+import {NodeDto} from "../../../model/file";
 import React, {Component} from "react";
 import {withNamespaces} from "react-i18next";
-import type {FileDto} from "../../model/file";
+import type {FileDto} from "../../../model/file";
 
 
 const withErrorProcessing = (WrappedComponent) => {
@@ -10,8 +10,7 @@ const withErrorProcessing = (WrappedComponent) => {
 
         errorInfo = (error) => this.props.t(`${error.type}`);
 
-        //todo process tree state depending on errors
-        //FileNotFound - remove file from tree
+        //FileNotFound - remove file from tree?
         applyErrorToState = (prevState, error, node: NodeDto, file: FileDto) => {
             let {t} = this.props;
             //todo not sure how to make this check better

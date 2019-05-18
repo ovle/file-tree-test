@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import AxiosStatic, {Cancel} from "axios";
-import type {FileTreeErrorDto} from "../../model/error";
+import type {FileTreeErrorDto} from "../../../model/error";
 
 /**
  * API-aware tree wrapper
