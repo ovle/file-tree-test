@@ -1,7 +1,6 @@
 // @flow
 
 import React, {Component} from "react";
-import {processError} from "./processError";
 import {NodeDto} from "../../model/file";
 
 /**
@@ -9,7 +8,7 @@ import {NodeDto} from "../../model/file";
  */
 const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
 
-    class TreeStateWrapper extends Component {
+    class StateWrapper extends Component {
 
         static defaultState() {
             return {
@@ -24,7 +23,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
         constructor(props) {
             super(props);
 
-            let defaultState = TreeStateWrapper.defaultState();
+            let defaultState = StateWrapper.defaultState();
             this.state = stateStorage ? (stateStorage.get() || defaultState) : defaultState;
         }
 
@@ -87,10 +86,12 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
                     }))
                 },
                 (error) => {
-                    this.setState(() => (processError(error, null)))
+                    this.setState(() => (this.processError(error, null)))
                 }
             );
         }
+
+
 
         loadData = (node: NodeDto) => {
             let reloadOpenedNode = (!updateOnExpand && node.loadingStatus === "Loaded");
@@ -103,10 +104,19 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             return fetchApi.fetchChildren(
                 fileId,
                 (children) => this.setState((prevState) => this.newState(prevState, fileId, children)),
-                (error) => this.setState((prevState) => processError(prevState, error, this.node(fileId), this.file(fileId)), this.resetErrorMessage),
+                (error) => this.processError(error, fileId),
                 () => this.onLoadingFinished(fileId)
             );
         };
+
+        processError(error, fileId) {
+            let {errorProcessingApi} = this.props;
+            this.setState(
+                (prevState) => errorProcessingApi && errorProcessingApi.applyErrorToState(
+                    prevState, error, this.node(fileId), this.file(fileId)
+                ), this.resetErrorMessage
+            );
+        }
 
         onLoadingFinished(fileId) {
             this.setState((prevState) => {
@@ -146,7 +156,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
         resetState = () => {
             stateStorage && stateStorage.reset();
 
-            this.setState(TreeStateWrapper.defaultState());
+            this.setState(StateWrapper.defaultState());
             this.loadRoot();
         };
 
@@ -175,10 +185,10 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
         };
 
 
-        render = () => <WrappedComponent stateApi={this.stateApi} error={this.state.error}/>
+        render = () => <WrappedComponent { ...this.props } stateApi={this.stateApi} error={this.state.error}/>
     }
 
-    return TreeStateWrapper;
+    return StateWrapper;
 };
 
 export default withState;

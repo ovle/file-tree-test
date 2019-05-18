@@ -7,7 +7,7 @@ import type {FileTreeErrorDto} from "../../model/error";
  */
 const withApi = (baseURL, WrappedComponent) => {
 
-    class TreeApiWrapper extends Component {
+    class ApiWrapper extends Component {
 
         constructor(props) {
             super(props);
@@ -84,10 +84,10 @@ const withApi = (baseURL, WrappedComponent) => {
         };
 
 
-        render = () => <WrappedComponent fetchApi={this.fetchApi}/>
+        render = () => <WrappedComponent { ...this.props } fetchApi={this.fetchApi}/>
     }
 
-    return TreeApiWrapper;
+    return ApiWrapper;
 };
 
 export default withApi;

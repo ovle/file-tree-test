@@ -1,23 +1,23 @@
 import React, {Component} from "react";
 import FileTreeBranch from "./FileTreeBranch";
 import {Tree, TreeContent, TreeHeader, TreeFooter, TreeTitle, Button} from "../styles.js";
-import messages from "../../utils/messages";
 import {Error} from "../styles";
+import {withNamespaces} from "react-i18next";
 
 
 class FileTree extends Component {
 
     render = () => {
-        let {stateApi, error} = this.props;
+        let {stateApi, error, t} = this.props;
         let resetState = stateApi.reset;
         let treeRoot = stateApi.root();
         let resetButton = <Button style={{"margin": "-20px 10px 0px auto", "width": "100px"}}
-                                  onClick={resetState}>{messages.reset}</Button>;
+                                  onClick={resetState}>{t("reset")}</Button>;
 
         return (
             <Tree>
                 <TreeHeader>
-                    <TreeTitle>{messages.title}</TreeTitle>
+                    <TreeTitle>{t("title")}</TreeTitle>
                     {resetButton}
                 </TreeHeader>
                 <TreeContent>
@@ -31,4 +31,4 @@ class FileTree extends Component {
     };
 }
 
-export default FileTree;
+export default withNamespaces("fileTree")(FileTree);
