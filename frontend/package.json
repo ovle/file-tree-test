@@ -1,6 +1,6 @@
 {
   "name": "file-tree-test-frontend",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "@babel/runtime": "7.4.3",
@@ -11,13 +11,14 @@
     "axios": "^0.18.0",
     "styled-components": "^4.2.0",
     "i18next": "^11.1.1",
-    "react-i18next": "^8.3.6"
+    "react-i18next": "^8.3.6",
+    "react-app-polyfill": "^1.0.1"
   },
   "devDependencies": {
     "babel-cli": "6.26.0",
     "babel-core": "6.26.0",
     "@babel/preset-env": "7.4.4",
-    "prop-types": "latest",
+    "babel-preset-react": "^6.24.1",
     "flow-bin": "0.98.0"
   },
   "scripts": {
@@ -39,12 +40,14 @@
     "development": [
       "last 1 chrome version",
       "last 1 firefox version",
-      "last 1 safari version"
+      "last 1 safari version",
+      "last 1 explorer version"
     ]
   },
   "babel": {
     "presets": [
-      "es2016"
+      "env",
+      "react"
     ]
   }
 }
