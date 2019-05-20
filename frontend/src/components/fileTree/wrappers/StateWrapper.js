@@ -1,5 +1,4 @@
 import React, {Component} from "react";
-import {NodeDto} from "../../../model/file";
 
 /**
  * State-aware tree wrapper
@@ -12,7 +11,8 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             return {
                 root: null,         //root node
                 files: {},          //file by fileId
-                nodes: {},          //node by fileId
+                loadingStatuses: {},          //loadingStatus by fileId
+                openingStatuses: {},          //openedStatus by fileId
                 childrenIds: {},    //fileIds by parent fileId
                 error: null
             };
@@ -31,44 +31,49 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             this.loadRoot();
         };
 
-        onNodeUnmount = (node: NodeDto) => {
+        onNodeUnmount = ({fileId}) => {
             let {fetchApi} = this.props;
-            let isCancelled = fetchApi.cancelFetch(node.fileId);
+            let isCancelled = fetchApi.cancelFetch(fileId);
             if (!isCancelled) {
                 return;
             }
 
-            let fileId = node.fileId;
             this.setState((prevState) => {
-                let prevNode = this.node(fileId);
                 return {
-                    nodes: {
-                        ...prevState.nodes,
-                        [fileId]: {...prevNode, loadingStatus: "NotLoaded", isOpened: false}
+                    loadingStatuses: {
+                        ...prevState.loadingStatuses,
+                        [fileId]: "NotLoaded"
+                    },
+                    openingStatuses: {
+                        ...prevState.openingStatuses,
+                        [fileId]: false
                     }
                 };
             });
         };
 
-        onNodeClick = (node: NodeDto) => {
-            let fileId = node.fileId;
-            let file = this.file(node.fileId);
+        onNodeClick = ({fileId}) => {
+            let file = this.file(fileId);
             if (!file.mayHaveChildren) {
                 return;
             }
 
             this.setState((prevState) => {
-                let prevNode = this.node(fileId);
-                let wasOpened = prevNode.isOpened;
-                let loadingStatus = (prevNode.loadingStatus === "Loaded") ? prevNode.loadingStatus : "Loading";
+                let wasOpened = this.openingStatus(fileId);
+                let prevLoadingStatus = this.loadingStatus(fileId);
+                let loadingStatus = (prevLoadingStatus === "Loaded") ? prevLoadingStatus : "Loading";
 
                 return {
-                    nodes: {
-                        ...prevState.nodes,
-                        [fileId]: {...prevNode, loadingStatus: loadingStatus, isOpened: !wasOpened}
-                    }
+                    loadingStatuses: {
+                        ...prevState.loadingStatuses,
+                        [fileId]: loadingStatus
+                    },
+                    openingStatuses: {
+                        ...prevState.openingStatuses,
+                        [fileId]: !wasOpened
+                    },
                 };
-            }, () => this.loadData(this.node(fileId)));
+            }, () => this.loadChildren(fileId));
         };
 
 
@@ -77,11 +82,12 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             fetchApi.fetchRoot(
                 (root) => {
                     let id = root.id;
-                    this.setState(() => ({
+                    this.setState((prevState) => ({
                         root: root,
                         files: {[id]: root},
-                        nodes: {[id]: new NodeDto(id)}
-                    }))
+                        loadingStatuses: {[id]: "NotLoaded"},
+                        openingStatuses: { ...prevState.openingStatuses, [id]: this.openingStatus(id) || false}
+                    }), this.checkOpenNodes())
                 },
                 (error) => {
                     this.setState(() => (this.processError(error, null)))
@@ -89,15 +95,15 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             );
         }
 
-
-
-        loadData = (node: NodeDto) => {
-            let reloadOpenedNode = (!updateOnExpand && node.loadingStatus === "Loaded");
-            if (!node.isOpened || reloadOpenedNode) {
+        loadChildren = (fileId) => {
+            let reloadOpenedNode = (!updateOnExpand && this.loadingStatus(fileId) === "Loaded");
+            if (!this.openingStatus(fileId) || reloadOpenedNode) {
                 return null;
             }
+            // if (!this.file(fileId)) {
+            //     return null;
+            // }
 
-            let fileId = node.fileId;
             let {fetchApi} = this.props;
             return fetchApi.fetchChildren(
                 fileId,
@@ -107,34 +113,46 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             );
         };
 
+        //todo fix ddos on deleted file
+        //clear openingStatuses somehow
+        checkOpenNodes = () => {
+            const openingStatuses = this.state.openingStatuses;
+            const openedIds = Object.keys(openingStatuses);
+            for (let id of openedIds) {
+                if (openingStatuses[id] && !this.file(id)) {
+                    this.loadChildren(id);
+                }
+            }
+        };
+
         processError(error, fileId) {
             let {errorProcessingApi} = this.props;
             this.setState(
                 (prevState) => errorProcessingApi && errorProcessingApi.applyErrorToState(
-                    prevState, error, this.node(fileId), this.file(fileId)
+                    prevState, error, this.file(fileId)
                 ), this.resetErrorMessage
             );
         }
 
         onLoadingFinished(fileId) {
             this.setState((prevState) => {
-                let prevNode = this.node(fileId);
-                let loadingStatus = prevNode.loadingStatus === "Loading" ? "Loaded" : prevNode.loadingStatus;
-
+                let prevLoadingStatus = this.loadingStatus(fileId);
+                let loadingStatus = prevLoadingStatus === "Loading" ? "Loaded" : prevLoadingStatus;
                 return {
-                    nodes: {
-                        ...prevState.nodes,
-                        [fileId]: {...prevNode, loadingStatus: loadingStatus}
+                    loadingStatuses: {
+                        ...prevState.loadingStatuses,
+                        [fileId]: loadingStatus
                     }
                 };
-            }, this.saveState);
+            }, () => { this.saveState(); this.checkOpenNodes(); }); //todo
         };
 
 
         newState = (prevState, parentId, children) => {
             let files = {...prevState.files};
-            let nodes = {...prevState.nodes};
             let childrenIds = {...prevState.childrenIds};
+            let loadingStatuses = {...prevState.loadingStatuses};
+            let openingStatuses = {...prevState.openingStatuses};
 
             childrenIds[parentId] = [];
             children.forEach(
@@ -142,19 +160,25 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
                     let id = file.id;
 
                     files[id] = file;
-                    nodes[id] = this.node(id) || new NodeDto(id);
                     childrenIds[parentId].push(id);
+                    loadingStatuses[id] = "NotLoaded";
+                    openingStatuses[id] = this.openingStatus(id) || false;
                 }
             );
 
-            return {files: files, nodes: nodes, childrenIds: childrenIds, error: null};
+            return {files: files, childrenIds: childrenIds, loadingStatuses: loadingStatuses, openingStatuses: openingStatuses, error: null};
         };
 
         //todo preserve structure ?
         resetState = () => {
             stateStorage && stateStorage.reset();
 
-            this.setState(StateWrapper.defaultState());
+            const newState = {
+                ...StateWrapper.defaultState(),
+                openingStatuses: this.state.openingStatuses
+            };
+
+            this.setState(newState);
             this.loadRoot();
         };
 
@@ -164,10 +188,17 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
 
         file = (fileId) => this.state.files[fileId];
 
-        node = (fileId) => this.state.nodes[fileId];
+        openingStatus = (fileId) => this.state.openingStatuses[fileId];
+
+        loadingStatus = (fileId) => this.state.loadingStatuses[fileId];
 
         children = (fileId) => this.state.childrenIds[fileId] || [];
 
+        node = (fileId) => ({
+            fileId: fileId,
+            loadingStatus: this.loadingStatus(fileId),
+            openingStatus: this.openingStatus(fileId)
+        });
 
         stateApi = {
             root: () => {
@@ -182,8 +213,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             reset: this.resetState
         };
 
-
-        render = () => <WrappedComponent { ...this.props } stateApi={this.stateApi} error={this.state.error}/>
+        render = () => <WrappedComponent {...this.props} stateApi={this.stateApi} error={this.state.error}/>
     }
 
     return StateWrapper;

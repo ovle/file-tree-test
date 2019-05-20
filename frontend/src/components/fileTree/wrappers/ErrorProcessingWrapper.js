@@ -1,4 +1,3 @@
-import {NodeDto} from "../../../model/file";
 import React, {Component} from "react";
 import {withNamespaces} from "react-i18next";
 import type {FileDto} from "../../../model/file";
@@ -11,21 +10,25 @@ const withErrorProcessing = (WrappedComponent) => {
         errorInfo = (error) => this.props.t(`${error.type}`);
 
         //FileNotFound - remove file from tree?
-        applyErrorToState = (prevState, error, node: NodeDto, file: FileDto) => {
+        applyErrorToState = (prevState, error, file: FileDto) => {
             let {t} = this.props;
             //todo not sure how to make this check better
             if (error === "Network Error") {
                 error = t("serverUnavailable");
             }
-            if ((typeof error == "string") || !node) return error;
+            if ((typeof error == "string") || !file) return error;
 
-            let nodes = { ...prevState.nodes };
-            if (node) {
-                nodes[node.fileId] = { ...node, loadingStatus: "LoadingError", isOpened: false }
-            }
 
+            const fileId = file.id;
             return {
-                nodes: nodes,
+                loadingStatuses: {
+                    ...prevState.loadingStatuses,
+                    [fileId]: "LoadingError"
+                },
+                openingStatuses: {
+                    ...prevState.openingStatuses,
+                    [fileId]: false
+                },
                 error: this.errorInfo(error, file)
             };
         };

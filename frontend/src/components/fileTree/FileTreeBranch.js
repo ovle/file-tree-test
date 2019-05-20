@@ -19,7 +19,7 @@ class FileTreeBranch extends Component {
 
     render() {
         let {branchRoot, stateApi, level} = this.props;
-        let {isOpened, fileId: rootFileId} = branchRoot;
+        let {openingStatus, fileId: rootFileId} = branchRoot;
         let rootFile = stateApi.file(rootFileId);
         let children = stateApi.children(rootFileId);
         let leftPaddingPerLevel = 60;
@@ -31,7 +31,7 @@ class FileTreeBranch extends Component {
                         <FileTreeNode file={rootFile} node={branchRoot}/>
                     </TreeDiv>
                 </NodeWrapper>
-                {isOpened &&
+                {openingStatus &&
                 <TreeDiv>
                     {
                         children.map(

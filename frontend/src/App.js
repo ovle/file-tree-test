@@ -23,7 +23,7 @@ const localStorage = {
 };
 
 let stateConfig = {
-    stateStorage: localStorage,
+    stateStorage: null,
     updateOnExpand: false   //todo no full support
 };
 

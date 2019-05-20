@@ -1,3 +1,5 @@
+// @flow
+
 type FileType = "Directory" | "Image" | "Archive" | "Other";
 type LoadingStatus = "NotLoaded" | "Loading" | "Loaded" | "LoadingError";
 
@@ -8,12 +10,8 @@ export type FileDto = {
     mayHaveChildren: boolean
 }
 
-export class NodeDto {
-    fileId: number;
-    loadingStatus: LoadingStatus = "NotLoaded";
-    isOpened: boolean = false;
-
-    constructor(fileId: number) {
-       this.fileId = fileId;
-    }
+export type NodeDto = {
+    fileId: number,
+    loadingStatus: LoadingStatus,
+    openingStatus: boolean
 }

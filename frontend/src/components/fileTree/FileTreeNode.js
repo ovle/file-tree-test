@@ -20,11 +20,11 @@ class FileTreeNode extends Component {
     render() {
         let {file, node} = this.props;
         let {type, mayHaveChildren} = file;
-        let {isOpened, loadingStatus} = node;
+        let {openingStatus, loadingStatus} = node;
         let isLoading = loadingStatus === "Loading";
         let isError = loadingStatus === "LoadingError";
         let iconName = isLoading ? "access_time" :
-            (isOpened && this.openedTypeIcon(type)) || this.typeIcon(type);
+            (openingStatus && this.openedTypeIcon(type)) || this.typeIcon(type);
         let NodeComponent =  isError ? ErrorNode : mayHaveChildren ? OpenableNode : Node;
 
         return (
