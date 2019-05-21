@@ -3,7 +3,7 @@ import React, {Component} from "react";
 /**
  * State-aware tree wrapper
  * todo tests
- * todo too complex
+ * todo too many state mutation boilerplate
  */
 const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
 
@@ -13,7 +13,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             return {
                 root: null,         //root node
                 files: {},          //file by fileId
-                loadingStatuses: {},          //loadingStatus by fileId
+                loadingStatuses: {},          //loadingStatus by fileId todo remove it, too complex
                 openingStatuses: {},          //openedStatus by fileId
                 childrenIds: {},    //fileIds by parent fileId
                 error: null
@@ -44,7 +44,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
                 return {
                     loadingStatuses: {
                         ...prevState.loadingStatuses,
-                        [fileId]: "NotLoaded"
+                        [fileId]: this.children(fileId) != null ? "Loaded" : "NotLoaded"
                     },
                     openingStatuses: {
                         ...prevState.openingStatuses,
@@ -90,10 +90,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             fetchApi.fetchRoot(
                 (root) => {
                     let id = root.id;
-                    let prevLoadingStatus = this.loadingStatus(id);
-                    let loadingStatus = prevLoadingStatus || "NotLoaded";
-                    // console.log("prevLoadingStatus: " + prevLoadingStatus);
-                    // console.log("loadingStatus: " + loadingStatus);
+                    let loadingStatus = this.children(id) != null ? "Loaded" : "NotLoaded";
 
                     this.setState((prevState) => ({
                         root: root,
@@ -114,9 +111,6 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             if ((this.children(fileId)) || reloadOpenedNode) {
                 return null;
             }
-            // if (!this.file(fileId)) {
-            //     return null;
-            // }
 
             let {fetchApi} = this.props;
             return fetchApi.fetchChildren(
@@ -127,12 +121,11 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             );
         };
 
-        //todo fix ddos on deleted file
-        //clear openingStatuses somehow
         checkOpenNodes = () => {
             setTimeout(() => {
                 const openingStatuses = this.state.openingStatuses;
                 const openedIds = Object.keys(openingStatuses);
+                //todo batch request? looks like ddos in case of many opened nodes
                 for (let id of openedIds) {
                     if (openingStatuses[id] && this.children(id) == null) {
                         this.loadChildren(id);
@@ -155,6 +148,7 @@ const withState = ({stateStorage, updateOnExpand}, WrappedComponent) => {
             this.setState((prevState) => {
                     let prevLoadingStatus = this.loadingStatus(fileId);
                     let loadingStatus = prevLoadingStatus === "Loading" ? "Loaded" : prevLoadingStatus;
+
                     return {
                         loadingStatuses: {
                             ...prevState.loadingStatuses,
