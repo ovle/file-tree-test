@@ -17,11 +17,13 @@ const withErrorProcessing = (WrappedComponent) => {
             if (error === "Network Error") {
                 error = t("serverUnavailable");
             }
-            if ((typeof error == "string") || !node) return error;
+            if ((typeof error == "string") || !node) {
+                return {error: error};
+            }
 
-            let nodes = { ...prevState.nodes };
+            let nodes = {...prevState.nodes};
             if (node) {
-                nodes[node.fileId] = { ...node, loadingStatus: "LoadingError", isOpened: false }
+                nodes[node.fileId] = {...node, loadingStatus: "LoadingError", isOpened: false}
             }
 
             return {
@@ -34,7 +36,7 @@ const withErrorProcessing = (WrappedComponent) => {
             applyErrorToState: this.applyErrorToState
         };
 
-        render = () => <WrappedComponent { ...this.props } errorProcessingApi={this.errorProcessingApi}/>
+        render = () => <WrappedComponent {...this.props} errorProcessingApi={this.errorProcessingApi}/>
     }
 
     return withNamespaces("error")(ErrorProcessingWrapper);
