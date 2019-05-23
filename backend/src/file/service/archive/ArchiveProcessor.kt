@@ -20,7 +20,8 @@ abstract class ArchiveProcessor {
             val bytesRead = inputStream.read(fileFirstBytes)
             signatures.any { signatureBytes ->
                 if (bytesRead < signatureBytes.size) return false
-                signatureBytes.zip(fileFirstBytes).all { it.first == it.second }
+                val fileFirstBytesCropped = fileFirstBytes.take(signatureBytes.size).toByteArray()
+                signatureBytes.contentEquals(fileFirstBytesCropped)
             }
         }
 
