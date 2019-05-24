@@ -65,7 +65,7 @@ class FileService(
             Directory -> parentFile
             Archive -> archiveService.unpack(parentFile)
             else -> throw IllegalArgumentException("get children not supported for type $parentType")
-        }.listFiles().toList()
+        }.listFiles().filter { it.canRead() }.toList()
     }
 
     private fun mayHaveChildren(parentFile: File): Boolean {
