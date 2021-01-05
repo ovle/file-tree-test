@@ -8,7 +8,7 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.0",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "styled-components": "^4.2.0",
     "i18next": "^11.1.1",
     "react-i18next": "^8.3.6",
